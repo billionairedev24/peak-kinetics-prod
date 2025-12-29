@@ -89,31 +89,21 @@ jobs:
           scp -i ~/.ssh/gcp_key backend/logback-spring.xml ${{ secrets.GCP_VM_USER }}@${{ secrets.INSTANCE_IP }}:~/deployment/backend/
 
       - name: Create environment file
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
-          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
-          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
-          TWILIO_PHONE_NUMBER: ${{ secrets.TWILIO_PHONE_NUMBER }}
-          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
         run: |
-          ssh -i ~/.ssh/gcp_key ${{ secrets.GCP_VM_USER }}@${{ secrets.INSTANCE_IP }} bash << 'ENDSSH'
-          cat > ~/deployment/.env << 'ENVEOF'
-          DATABASE_URL=${DATABASE_URL}
-          DATABASE_USERNAME=${DATABASE_USERNAME}
-          DATABASE_PASSWORD=${DATABASE_PASSWORD}
-          JWT_SECRET=${JWT_SECRET}
-          RESEND_API_KEY=${RESEND_API_KEY}
-          TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
-          TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
-          TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
-          GOOGLE_PLACES_API_KEY=${GOOGLE_PLACES_API_KEY}
+          cat > .env << 'EOF'
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}
+          DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+          TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_PHONE_NUMBER=${{ secrets.TWILIO_PHONE_NUMBER }}
+          GOOGLE_PLACES_API_KEY=${{ secrets.GOOGLE_PLACES_API_KEY }}
           SPRING_PROFILES_ACTIVE=prod
-          ENVEOF
-          ENDSSH
+          EOF
+          scp -i ~/.ssh/gcp_key .env ${{ secrets.GCP_VM_USER }}@${{ secrets.INSTANCE_IP }}:~/deployment/.env
+          rm -f .env
 
       - name: Deploy application
         run: |
