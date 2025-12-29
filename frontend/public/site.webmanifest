@@ -1,0 +1,46 @@
+{
+  "name": "Peak Kinetics - Physical Therapy & Movement Science in Austin, TX",
+  "short_name": "Peak Kinetics",
+  "description": "Leading physical therapy clinic specializing in sports medicine, injury recovery, and movement science in Austin, Texas.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["health", "medical"],
+  "screenshots": [
+    {
+      "src": "/screenshot-narrow.jpg",
+      "sizes": "540x720",
+      "type": "image/jpg",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshot-wide.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpg",
+      "form_factor": "wide"
+    }
+  ]
+}

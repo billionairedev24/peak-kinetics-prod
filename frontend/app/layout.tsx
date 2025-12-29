@@ -1,0 +1,299 @@
+import type React from "react"
+import type { Metadata } from "next"
+import { Playfair_Display, Source_Sans_3 } from "next/font/google"
+import { Suspense } from "react"
+import { SchedulingProvider } from "@/components/scheduling-context"
+import "./globals.css"
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
+})
+
+const sourceSans = Source_Sans_3({
+  subsets: ["latin"],
+  variable: "--font-source-sans",
+  display: "swap",
+})
+
+export const metadata: Metadata = {
+  title: "Peak Kinetics - Physical Therapy & Movement Science in Austin, Texas",
+  description:
+    "Award-winning physical therapy clinic in Austin, TX specializing in sports medicine, injury recovery, movement science, and biomechanics. Personalized rehabilitation with insurance and cash pay options. Expert therapists serving Austin and surrounding areas.",
+  keywords:
+    "physical therapy Austin TX, sports medicine, injury recovery, movement science, rehabilitation, physical therapist, orthopedic therapy, biomechanics, pain management, performance training, athlete recovery, physical therapy near me, PT Austin, therapy services Texas",
+  authors: [{ name: "Peak Kinetics", url: "https://peakkinetics.com" }],
+  creator: "Peak Kinetics",
+  publisher: "Peak Kinetics",
+  formatDetection: {
+    email: false,
+    telephone: true,
+    address: true,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: "index, follow",
+    "max-snippet": -1,
+    "max-image-preview": "large",
+    "max-video-preview": -1,
+  },
+  verification: {
+    google: "your-google-verification-code",
+  },
+  alternates: {
+    canonical: "https://peakkinetics.com",
+  },
+  openGraph: {
+    title: "Peak Kinetics - Leading Physical Therapy & Movement Science in Austin",
+    description:
+      "Transform your recovery with evidence-based physical therapy and cutting-edge movement science. Expert rehabilitation services in Austin, TX.",
+    url: "https://peakkinetics.com",
+    type: "website",
+    locale: "en_US",
+    siteName: "Peak Kinetics",
+    images: [
+      {
+        url: "https://peakkinetics.com/og-image-1200x630.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Peak Kinetics Physical Therapy Austin",
+      },
+      {
+        url: "https://peakkinetics.com/og-image-800x600.jpg",
+        width: 800,
+        height: 600,
+        alt: "Peak Kinetics Therapy Services",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@peakkinetics",
+    creator: "@peakkinetics",
+    title: "Peak Kinetics - Physical Therapy & Movement Science in Austin, TX",
+    description:
+      "Expert physical therapy and rehabilitation services with personalized treatment plans. Insurance and cash pay options available.",
+    images: ["https://peakkinetics.com/twitter-image.jpg"],
+  },
+    generator: 'v0.app'
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        <meta name="theme-color" content="#2563eb" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Peak Kinetics" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <meta name="msapplication-TileColor" content="#2563eb" />
+        <meta name="msapplication-config" content="/browserconfig.xml" />
+
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": ["LocalBusiness", "HealthAndBeautyBusiness", "MedicalBusiness"],
+            "@id": "https://peakkinetics.com",
+            name: "Peak Kinetics",
+            alternateName: ["Peak Kinetics Physical Therapy", "Peak Kinetics Rehabilitation"],
+            image: "https://peakkinetics.com/logo.png",
+            logo: {
+              "@type": "ImageObject",
+              url: "https://peakkinetics.com/logo.png",
+              width: 250,
+              height: 60,
+            },
+            description:
+              "Leading physical therapy and movement science clinic in Austin, TX specializing in sports medicine, injury recovery, and rehabilitation.",
+            url: "https://peakkinetics.com",
+            telephone: "+1-737-368-2653",
+            email: "contact@peakkinetics.com",
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: "Your Address Here",
+              addressLocality: "Austin",
+              addressRegion: "TX",
+              postalCode: "78704",
+              addressCountry: "US",
+            },
+            areaServed: [
+              {
+                "@type": "State",
+                name: "Texas",
+              },
+              {
+                "@type": "City",
+                name: "Austin",
+              },
+              {
+                "@type": "City",
+                name: "Round Rock",
+              },
+              {
+                "@type": "City",
+                name: "Cedar Park",
+              },
+            ],
+            priceRange: "$$",
+            sameAs: [
+              "https://www.facebook.com/peakkinetics",
+              "https://www.instagram.com/peakkinetics",
+              "https://www.youtube.com/peakkinetics",
+              "https://www.linkedin.com/company/peakkinetics",
+            ],
+            openingHoursSpecification: [
+              {
+                "@type": "OpeningHoursSpecification",
+                dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                opens: "07:00",
+                closes: "19:00",
+              },
+              {
+                "@type": "OpeningHoursSpecification",
+                dayOfWeek: "Saturday",
+                opens: "08:00",
+                closes: "14:00",
+              },
+            ],
+            accepts_payment: ["Cash", "Credit Card", "Debit Card", "Insurance", "Apple Pay", "Google Pay"],
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: "4.9",
+              ratingCount: "127",
+              reviewCount: "127",
+            },
+          })}
+        </script>
+
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "HealthAndBeautyBusiness",
+            name: "Peak Kinetics",
+            businessFunction: "ServiceLocation",
+            knowsAbout: [
+              "Physical Therapy",
+              "Rehabilitation",
+              "Sports Medicine",
+              "Movement Science",
+              "Biomechanics",
+              "Injury Recovery",
+              "Pain Management",
+              "Athlete Performance",
+            ],
+            hasOfferCatalog: {
+              "@type": "OfferCatalog",
+              name: "Physical Therapy Services",
+              itemListElement: [
+                {
+                  "@type": "Offer",
+                  name: "Sports Medicine Therapy",
+                  description: "Specialized care for athletic injuries and performance enhancement",
+                },
+                {
+                  "@type": "Offer",
+                  name: "Injury Recovery",
+                  description: "Comprehensive rehabilitation following injuries",
+                },
+                {
+                  "@type": "Offer",
+                  name: "Movement Science Consultation",
+                  description: "Advanced movement analysis and optimization",
+                },
+              ],
+            },
+          })}
+        </script>
+
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "What types of physical therapy services does Peak Kinetics offer?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Peak Kinetics offers sports medicine, injury recovery, movement science consultation, biomechanics analysis, pain management, and personalized rehabilitation services.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Does Peak Kinetics accept insurance?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes, Peak Kinetics accepts most major insurance plans in Texas. We also offer cash pay options for uninsured patients.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Where is Peak Kinetics located?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Peak Kinetics is located in Austin, Texas, with services available throughout the Austin metropolitan area.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "What is the difference between physical therapy and movement science?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Physical therapy focuses on rehabilitation after injury, while movement science optimizes movement patterns for performance and injury prevention.",
+                },
+              },
+            ],
+          })}
+        </script>
+
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: "https://peakkinetics.com",
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Services",
+                item: "https://peakkinetics.com/#services",
+              },
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: "About",
+                item: "https://peakkinetics.com/#about",
+              },
+              {
+                "@type": "ListItem",
+                position: 4,
+                name: "Contact",
+                item: "https://peakkinetics.com/#contact",
+              },
+            ],
+          })}
+        </script>
+      </head>
+      <body className={`${playfair.variable} ${sourceSans.variable} font-sans antialiased`}>
+        <SchedulingProvider>
+          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        </SchedulingProvider>
+      </body>
+    </html>
+  )
+}

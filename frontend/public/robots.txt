@@ -1,0 +1,26 @@
+# Peak Kinetics robots.txt for search engine crawling
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /private
+Disallow: /*.json$
+Disallow: /search
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.svg$
+Allow: /*.jpg$
+Allow: /*.png$
+
+# Specific rules for Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Specific rules for Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 0
+
+# Sitemap location for better indexing
+Sitemap: https://peakkinetics.com/sitemap.xml
+Sitemap: https://peakkinetics.com/sitemap-services.xml
