@@ -1,4 +1,4 @@
-name: Peak Kinetics GCP deployment
+name: Build and Deploy to GCP
 
 on:
   push:
@@ -6,16 +6,23 @@ on:
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
-
-env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  GCP_REGION: us-central1
-  INSTANCE_NAME: peak-kinetics-vm
-  INSTANCE_ZONE: us-central1-a
+    inputs:
+      action:
+        description: 'Deployment action'
+        required: true
+        default: 'deploy'
+        type: choice
+        options:
+          - deploy
+          - restart
+          - stop
+          - start
+          - status
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.event.inputs.action == 'deploy' || github.event.inputs.action == '' || github.event_name != 'workflow_dispatch'
 
     steps:
       - name: Checkout code
@@ -57,7 +64,9 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    if: |
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
+      (github.event.inputs.action == 'deploy' || github.event.inputs.action == '')
 
     steps:
       - name: Download artifacts
@@ -75,7 +84,7 @@ jobs:
       - name: Copy files to VM
         run: |
           # Create deployment directory structure
-          ssh -i ~/.ssh/gcp_key -o StrictHostKeyChecking=no ${{ secrets.GCP_VM_USER }}@${{ secrets.INSTANCE_IP }} '
+          ssh -i ~/.ssh/gcp_key ${{ secrets.GCP_VM_USER }}@${{ secrets.INSTANCE_IP }} '
             mkdir -p ~/deployment/backend/target
             mkdir -p ~/deployment/uploads/blog/images
           '
@@ -86,8 +95,46 @@ jobs:
           # Copy Docker Compose file
           scp -i ~/.ssh/gcp_key compose.yml ${{ secrets.GCP_VM_USER }}@${{ secrets.INSTANCE_IP }}:~/deployment/
           
-          # Copy logback config if needed
+          # Copy logback config
           scp -i ~/.ssh/gcp_key backend/logback-spring.xml ${{ secrets.GCP_VM_USER }}@${{ secrets.INSTANCE_IP }}:~/deployment/backend/
+
+      - name: Create environment file
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_PHONE_NUMBER: ${{ secrets.TWILIO_PHONE_NUMBER }}
+          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+        run: |
+          ssh -i ~/.ssh/gcp_key ${{ secrets.GCP_VM_USER }}@${{ secrets.INSTANCE_IP }} << ENDSSH
+            cat > ~/deployment/.env << 'EOF'
+          # Database Configuration
+          DATABASE_URL=${DATABASE_URL}
+          DATABASE_USERNAME=${DATABASE_USERNAME}
+          DATABASE_PASSWORD=${DATABASE_PASSWORD}
+          
+          # JWT Configuration
+          JWT_SECRET=${JWT_SECRET}
+          
+          # Email Configuration (Resend)
+          RESEND_API_KEY=${RESEND_API_KEY}
+          
+          # SMS Configuration (Twilio)
+          TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+          TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+          TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
+          
+          # Google Places API
+          GOOGLE_PLACES_API_KEY=${GOOGLE_PLACES_API_KEY}
+          
+          # Spring Profile
+          SPRING_PROFILES_ACTIVE=prod
+          EOF
+          ENDSSH
 
       - name: Deploy application
         run: |
@@ -96,16 +143,30 @@ jobs:
             cd ~/deployment
           
             # Stop existing application gracefully
-            if pgrep -f "peak-backend.jar" > /dev/null; then
+            if [ -f app.pid ] && kill -0 $(cat app.pid) 2>/dev/null; then
               echo "Stopping existing Spring Boot application..."
-              pkill -TERM -f "peak-backend.jar" || true
-              sleep 5
+              kill -TERM $(cat app.pid) || true
+          
+              # Wait for graceful shutdown (max 30 seconds)
+              for i in {1..30}; do
+                if ! kill -0 $(cat app.pid) 2>/dev/null; then
+                  echo "Application stopped gracefully"
+                  break
+                fi
+                echo "Waiting for shutdown... ($i/30)"
+                sleep 1
+              done
+          
               # Force kill if still running
-              pkill -KILL -f "peak-backend.jar" || true
+              if kill -0 $(cat app.pid) 2>/dev/null; then
+                echo "Force killing application..."
+                kill -KILL $(cat app.pid) || true
+              fi
+              rm -f app.pid
             fi
           
             # Start/restart Docker Compose for LGTM stack
-            echo "Starting LGTM stack with Docker Compose..."
+            echo "Starting LGTM observability stack..."
             docker compose down || true
             docker compose up -d
           
@@ -113,20 +174,27 @@ jobs:
             echo "Waiting for observability stack..."
             sleep 10
           
-            # Start Spring Boot application in background
+            # Start Spring Boot application
             echo "Starting Spring Boot application..."
             cd backend/target
           
             # Find the JAR file
             JAR_FILE=$(ls *.jar | head -n 1)
           
+            # Load environment variables and start application
+            export $(cat ~/deployment/.env | xargs)
+          
             # Start application with nohup
-            nohup java -jar "$JAR_FILE" > ~/deployment/app.log 2>&1 &
+            nohup java \
+              -Dspring.profiles.active=prod \
+              -jar "$JAR_FILE" \
+              > ~/deployment/app.log 2>&1 &
           
             # Save PID
             echo $! > ~/deployment/app.pid
           
             echo "Application started with PID: $(cat ~/deployment/app.pid)"
+            echo "Logs: ~/deployment/app.log"
           ENDSSH
 
       - name: Health check
@@ -136,9 +204,9 @@ jobs:
           
           # Health check with retries
           for i in {1..10}; do
-            if curl -f http://${{ secrets.INSTANCE_IP }}:8080/actuator/health; then
+            if curl -f https://peakkineticspt.com/actuator/health; then
               echo "✅ Deployment successful! Application is healthy."
-              echo "🌐 Application URL: http://${{ secrets.INSTANCE_IP }}:8080"
+              echo "🌐 Application URL: https://peakkineticspt.com"
               exit 0
             fi
             echo "Attempt $i failed, retrying in 10 seconds..."
@@ -149,12 +217,152 @@ jobs:
           
           # Fetch logs for debugging
           ssh -i ~/.ssh/gcp_key ${{ secrets.GCP_VM_USER }}@${{ secrets.INSTANCE_IP }} '
-            echo "=== Application Logs ==="
+            echo "=== Last 50 lines of application logs ==="
             tail -n 50 ~/deployment/app.log
+            echo ""
             echo "=== Docker Compose Status ==="
             cd ~/deployment && docker compose ps
+            echo ""
+            echo "=== Environment Check ==="
+            if [ -f ~/deployment/.env ]; then
+              echo "Environment file exists"
+              echo "Variables count: $(wc -l < ~/deployment/.env)"
+            else
+              echo "Environment file missing!"
+            fi
           '
           exit 1
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f ~/.ssh/gcp_key
+
+  control:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' && 
+      (github.event.inputs.action == 'restart' || 
+       github.event.inputs.action == 'stop' || 
+       github.event.inputs.action == 'start' ||
+       github.event.inputs.action == 'status')
+
+    steps:
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GCP_VM_SSH_KEY }}" > ~/.ssh/gcp_key
+          chmod 600 ~/.ssh/gcp_key
+          ssh-keyscan -H ${{ secrets.INSTANCE_IP }} >> ~/.ssh/known_hosts
+
+      - name: Execute action - ${{ github.event.inputs.action }}
+        run: |
+          ssh -i ~/.ssh/gcp_key ${{ secrets.GCP_VM_USER }}@${{ secrets.INSTANCE_IP }} << 'ENDSSH'
+            set -e
+            cd ~/deployment
+          
+            case "${{ github.event.inputs.action }}" in
+              stop)
+                echo "🛑 Stopping application..."
+                if [ -f app.pid ] && kill -0 $(cat app.pid) 2>/dev/null; then
+                  kill -TERM $(cat app.pid)
+                  sleep 5
+                  if kill -0 $(cat app.pid) 2>/dev/null; then
+                    kill -KILL $(cat app.pid)
+                  fi
+                  rm -f app.pid
+                  echo "✅ Application stopped"
+                else
+                  echo "⚠️  Application is not running"
+                fi
+          
+                echo "Stopping Docker Compose stack..."
+                docker compose down
+                echo "✅ Observability stack stopped"
+                ;;
+          
+              start)
+                echo "▶️  Starting observability stack..."
+                docker compose up -d
+                sleep 10
+          
+                echo "▶️  Starting application..."
+                cd backend/target
+                JAR_FILE=$(ls *.jar | head -n 1)
+                export $(cat ~/deployment/.env | xargs)
+          
+                nohup java \
+                  -Dspring.profiles.active=prod \
+                  -jar "$JAR_FILE" \
+                  > ~/deployment/app.log 2>&1 &
+          
+                echo $! > ~/deployment/app.pid
+                echo "✅ Application started with PID: $(cat ~/deployment/app.pid)"
+                ;;
+          
+              restart)
+                echo "🔄 Restarting application..."
+          
+                # Stop application
+                if [ -f app.pid ] && kill -0 $(cat app.pid) 2>/dev/null; then
+                  kill -TERM $(cat app.pid)
+                  sleep 5
+                  if kill -0 $(cat app.pid) 2>/dev/null; then
+                    kill -KILL $(cat app.pid)
+                  fi
+                  rm -f app.pid
+                fi
+          
+                # Restart Docker Compose
+                docker compose restart
+                sleep 10
+          
+                # Start application
+                cd backend/target
+                JAR_FILE=$(ls *.jar | head -n 1)
+                export $(cat ~/deployment/.env | xargs)
+          
+                nohup java \
+                  -Dspring.profiles.active=prod \
+                  -jar "$JAR_FILE" \
+                  > ~/deployment/app.log 2>&1 &
+          
+                echo $! > ~/deployment/app.pid
+                echo "✅ Application restarted with PID: $(cat ~/deployment/app.pid)"
+                ;;
+          
+              status)
+                echo "📊 Application Status"
+                echo "===================="
+          
+                if [ -f app.pid ]; then
+                  PID=$(cat app.pid)
+                  if kill -0 $PID 2>/dev/null; then
+                    echo "✅ Application is RUNNING (PID: $PID)"
+                    echo ""
+                    echo "Memory usage:"
+                    ps -p $PID -o pid,ppid,%mem,%cpu,cmd
+                  else
+                    echo "❌ Application is STOPPED (stale PID file)"
+                  fi
+                else
+                  echo "❌ Application is STOPPED (no PID file)"
+                fi
+          
+                echo ""
+                echo "📦 Docker Compose Status:"
+                docker compose ps
+          
+                echo ""
+                echo "🌐 Health Check:"
+                curl -f https://peakkineticspt.com/actuator/health || echo "Health check failed"
+          
+                echo ""
+                echo "📝 Recent Logs (last 20 lines):"
+                tail -n 20 ~/deployment/app.log
+                ;;
+            esac
+          ENDSSH
 
       - name: Cleanup
         if: always()
