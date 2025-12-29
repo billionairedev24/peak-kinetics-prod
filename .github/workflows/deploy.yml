@@ -12,7 +12,6 @@ env:
   GCP_REGION: us-central1
   INSTANCE_NAME: peak-kinetics-vm
   INSTANCE_ZONE: us-central1-a
-  INSTANCE_IP: 34.174.61.205
 
 jobs:
   build:
@@ -71,28 +70,28 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.GCP_VM_SSH_KEY }}" > ~/.ssh/gcp_key
           chmod 600 ~/.ssh/gcp_key
-          ssh-keyscan -H ${{ env.INSTANCE_IP }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secretsINSTANCE_IP }} >> ~/.ssh/known_hosts
 
       - name: Copy files to VM
         run: |
           # Create deployment directory structure
-          ssh -i ~/.ssh/gcp_key -o StrictHostKeyChecking=no ${{ secrets.GCP_VM_USER }}@${{ env.INSTANCE_IP }} '
+          ssh -i ~/.ssh/gcp_key -o StrictHostKeyChecking=no ${{ secrets.GCP_VM_USER }}@${{ secretsINSTANCE_IP }} '
             mkdir -p ~/deployment/backend/target
             mkdir -p ~/deployment/uploads/blog/images
           '
           
           # Copy JAR file
-          scp -i ~/.ssh/gcp_key backend/target/*.jar ${{ secrets.GCP_VM_USER }}@${{ env.INSTANCE_IP }}:~/deployment/backend/target/
+          scp -i ~/.ssh/gcp_key backend/target/*.jar ${{ secrets.GCP_VM_USER }}@${{ secretsINSTANCE_IP }}:~/deployment/backend/target/
           
           # Copy Docker Compose file
-          scp -i ~/.ssh/gcp_key compose.yml ${{ secrets.GCP_VM_USER }}@${{ env.INSTANCE_IP }}:~/deployment/
+          scp -i ~/.ssh/gcp_key compose.yml ${{ secrets.GCP_VM_USER }}@${{ secretsINSTANCE_IP }}:~/deployment/
           
           # Copy logback config if needed
-          scp -i ~/.ssh/gcp_key backend/logback-spring.xml ${{ secrets.GCP_VM_USER }}@${{ env.INSTANCE_IP }}:~/deployment/backend/
+          scp -i ~/.ssh/gcp_key backend/logback-spring.xml ${{ secrets.GCP_VM_USER }}@${{ secretsINSTANCE_IP }}:~/deployment/backend/
 
       - name: Deploy application
         run: |
-          ssh -i ~/.ssh/gcp_key ${{ secrets.GCP_VM_USER }}@${{ env.INSTANCE_IP }} << 'ENDSSH'
+          ssh -i ~/.ssh/gcp_key ${{ secrets.GCP_VM_USER }}@${{ secretsINSTANCE_IP }} << 'ENDSSH'
             set -e
             cd ~/deployment
           
@@ -137,9 +136,9 @@ jobs:
           
           # Health check with retries
           for i in {1..10}; do
-            if curl -f http://${{ env.INSTANCE_IP }}:8080/actuator/health; then
+            if curl -f http://${{ secretsINSTANCE_IP }}:8080/actuator/health; then
               echo "✅ Deployment successful! Application is healthy."
-              echo "🌐 Application URL: http://${{ env.INSTANCE_IP }}:8080"
+              echo "🌐 Application URL: http://${{ secretsINSTANCE_IP }}:8080"
               exit 0
             fi
             echo "Attempt $i failed, retrying in 10 seconds..."
@@ -149,7 +148,7 @@ jobs:
           echo "❌ Health check failed after 10 attempts"
           
           # Fetch logs for debugging
-          ssh -i ~/.ssh/gcp_key ${{ secrets.GCP_VM_USER }}@${{ env.INSTANCE_IP }} '
+          ssh -i ~/.ssh/gcp_key ${{ secrets.GCP_VM_USER }}@${{ secretsINSTANCE_IP }} '
             echo "=== Application Logs ==="
             tail -n 50 ~/deployment/app.log
             echo "=== Docker Compose Status ==="
