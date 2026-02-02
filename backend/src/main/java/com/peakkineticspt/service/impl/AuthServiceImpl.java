@@ -6,6 +6,7 @@ import com.peakkineticspt.entity.User;
 import com.peakkineticspt.repository.PasswordResetTokenRepository;
 import com.peakkineticspt.repository.UserRepository;
 import com.peakkineticspt.service.IAuthService;
+import com.peakkineticspt.service.IEmailNotificationService;
 import com.resend.core.exception.ResendException;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -28,7 +29,7 @@ public class AuthServiceImpl implements IAuthService {
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+    private final IEmailNotificationService emailService;
     private final Tracer tracer;
 
     @Override
@@ -58,7 +59,7 @@ public class AuthServiceImpl implements IAuthService {
             return new AuthDTOs.RegisterResponse(
                     true,
                     "Account created successfully"
-                    //new RegisterData(admin.getId(), admin.getEmail(), admin.getFullName())
+            // new RegisterData(admin.getId(), admin.getEmail(), admin.getFullName())
             );
         } finally {
             span.end();
@@ -132,8 +133,7 @@ public class AuthServiceImpl implements IAuthService {
                         .role(admin.getRole())
                         .lastLogin(LocalDateTime.now()
                                 .format(DateTimeFormatter.ISO_DATE_TIME))
-                        .build()
-                )
+                        .build())
                 .orElse(null);
     }
 

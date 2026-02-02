@@ -1,38 +1,49 @@
 spring:
   application:
     name: peak-kinetics
-
-resend:
-  api:
-    key: ${RESEND_API_KEY}
-
-twilio:
-  account-sid: ${TWILIO_ACCOUNT_SID}
-  auth-token: ${TWILIO_AUTH_TOKEN}
-  phone-number: ${TWILIO_PHONE_NUMBER}
-
-google:
-  places:
-    api:
-      key: ${GOOGLE_PLACES_API_KEY}
-
+  docker:
+    compose:
+      enabled: false
   datasource:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
-
-jpa:
-  hibernate:
-    ddl-auto: update
-  show-sql: true
-  properties:
+  jpa:
     hibernate:
-      dialect: org.hibernate.dialect.PostgreSQLDialect
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   servlet:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: 128MB
+      max-request-size: 130MB
+
+uploadthing:
+  token: ${UPLOADTHING_TOKEN}
+
+google:
+  oauth:
+    client-id: ${GOOGLE_OAUTH_CLIENT_ID}
+    client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET}
+    refresh-token: ${GOOGLE_OAUTH_REFRESH_TOKEN}
+  business:
+    account-ref: ${GOOGLE_BUSINESS_ACCOUNT}
+    location-ref: ${GOOGLE_BUSINESS_LOCATION}
+  places:
+    api-key: ${GOOGLE_PLACES_API_KEY}
+    place-id: ${GOOGLE_PLACES_PLACE_ID}
+
+resend:
+  api:
+    key: ${RESEND_API_KEY}
+
+vonage:
+  api-key: ${VONAGE_API_KEY}
+  api-secret: ${VONAGE_API_SECRET}
+  from-number: ${VONAGE_FROM_NUMBER}
 
 server:
   forward-headers-strategy: framework
@@ -46,25 +57,10 @@ management:
   tracing:
     sampling:
       probability: 0.1
-  otlp:
-    metrics:
-      export:
-        url: http://localhost:4318/v1/metrics
-  opentelemetry:
-    tracing:
-      export:
-        otlp:
-          endpoint: http://localhost:4318/v1/traces
-    logging:
-      export:
-        otlp:
-          endpoint: http://localhost:4318/v1/logs
 
 storage:
   upload-dir: uploads
 
 logging:
   level:
-    com.peakkineticspt: INFO
-    org.springframework.boot.docker.compose: DEBUG
-    org.springframework.boot.actuate.autoconfigure: DEBUG
+    root: INFO

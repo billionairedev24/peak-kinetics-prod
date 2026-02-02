@@ -12,7 +12,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -37,9 +36,30 @@ public class Review {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String text;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean published = false;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private ReviewSource source = ReviewSource.LOCAL;
+
+    @Column(unique = true)
+    private String googleReviewId;
+
+    @Column(columnDefinition = "TEXT")
+    private String authorUrl;
+
+    @Column(columnDefinition = "TEXT")
+    private String authorPhotoUrl;
+
+    @Column(columnDefinition = "TEXT")
+    private String reply;
+
+    public boolean isGoogleReview() {
+        return ReviewSource.GOOGLE.equals(this.source);
+    }
 }

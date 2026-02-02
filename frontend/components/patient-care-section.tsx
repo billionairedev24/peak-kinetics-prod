@@ -10,8 +10,8 @@ export function PatientCareSection() {
     },
     {
       icon: MapPin,
-      title: "Convenient Locations",
-      description: "Multiple clinic locations with easy parking and public transportation access.",
+      title: "Mobile Convenience",
+      description: "We bring professional therapy directly to your home, office, or gym—no commute required.",
     },
     {
       icon: FileText,
@@ -75,19 +75,19 @@ export function PatientCareSection() {
           </p>
         </div>
 
-        {/* Facility Showcase with Background Image */}
+        {/* Mobile Care Showcase with Background Image */}
         <div className="relative mb-20 rounded-3xl overflow-hidden">
           <div
             className="h-96 bg-cover bg-center relative"
             style={{
-              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url('/modern-physical-therapy-clinic-with-professional-e.jpg')`,
+              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url('/mobile-physical-therapy-professional-in-home-care.jpg')`,
             }}
           >
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center text-white">
-                <h3 className="text-3xl md:text-4xl font-bold mb-4">State-of-the-Art Facilities</h3>
-                <p className="text-xl opacity-90 max-w-2xl mx-auto">
-                  Modern equipment and comfortable treatment spaces designed for your optimal recovery experience
+              <div className="text-center text-white p-6">
+                <h3 className="text-3xl md:text-5xl font-black mb-6 tracking-tight">Professional Care, Anywhere</h3>
+                <p className="text-xl opacity-95 max-w-2xl mx-auto font-medium leading-relaxed">
+                  We bring elite-level equipment and expert clinical knowledge to your front door, providing a premium recovery experience in your own space.
                 </p>
               </div>
             </div>

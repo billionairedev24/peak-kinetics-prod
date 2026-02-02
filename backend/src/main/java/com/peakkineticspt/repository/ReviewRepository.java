@@ -9,5 +9,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     Page<Review> findByPublishedTrue(Pageable pageable);
+
     Page<Review> findAll(Pageable pageable);
+
+    boolean existsByGoogleReviewId(String googleReviewId);
 }

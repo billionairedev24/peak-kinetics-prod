@@ -1,6 +1,5 @@
 package com.peakkineticspt.service.impl;
 
-
 import com.peakkineticspt.dto.BlogDTOs;
 import com.peakkineticspt.entity.BlogPost;
 import com.peakkineticspt.entity.User;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class BlogServiceImpl implements IBlogService {
 
@@ -37,18 +35,23 @@ public class BlogServiceImpl implements IBlogService {
     private final UserRepository userRepository;
     private final Tracer tracer;
 
+    public BlogServiceImpl(BlogPostRepository blogRepository, UserRepository userRepository, Tracer tracer) {
+        this.blogRepository = blogRepository;
+        this.userRepository = userRepository;
+        this.tracer = tracer;
+    }
+
     @Value("${storage.upload-dir}")
     private String uploadDir;
 
-
     @Override
-    public Page<BlogDTOs.BlogResponse> getAllPosts(String status, String slug, Integer limit, Integer offset, String tags) {
+    public Page<BlogDTOs.BlogResponse> getAllPosts(String status, String slug, Integer limit, Integer offset,
+            String tags) {
         Span span = tracer.spanBuilder("blog.getAllPosts").startSpan();
         try {
             PageRequest pageRequest = PageRequest.of(
                     offset != null ? offset : 0,
-                    limit != null ? limit : 10
-            );
+                    limit != null ? limit : 10);
 
             Page<BlogPost> posts;
 
@@ -149,11 +152,12 @@ public class BlogServiceImpl implements IBlogService {
 
             post.setTitle(request.getTitle());
             post.setSlug(request.getSlug());
-            post.setExcerpt(request.getExcerpt() != null ? request.getExcerpt() : generateExcerpt(request.getContent()));
+            post.setExcerpt(
+                    request.getExcerpt() != null ? request.getExcerpt() : generateExcerpt(request.getContent()));
             post.setContent(request.getContent());
             post.setFeaturedImage(request.getFeaturedImage());
             post.setStatus(request.getStatus());
-            post.setTags(String.join(",",request.getTags()));
+            post.setTags(String.join(",", request.getTags()));
 
             if ("published".equals(request.getStatus()) && post.getPublishedAt() == null) {
                 post.setPublishedAt(LocalDateTime.now());

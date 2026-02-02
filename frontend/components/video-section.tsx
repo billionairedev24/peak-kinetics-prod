@@ -1,26 +1,47 @@
 "use client"
 
-import { Play } from "lucide-react"
-import { useState } from "react"
+import { Play, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react"
+import { API_ENDPOINTS } from "@/lib/api-config"
 
 export function VideoSection() {
-  const [activeVideo, setActiveVideo] = useState(1)
+  const [videos, setVideos] = useState<any[]>([])
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
-  const videos = {
-    1: {
-      url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-      title: "Patient Success Story",
-      thumbnail: "/pain-management.jpeg",
-    },
-    2: {
-      url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-      title: "Our Treatment Approach",
-      thumbnail: "/modern-physical-therapy-clinic-with-professional-e.jpg",
-    },
+  useEffect(() => {
+    async function fetchVideos() {
+      try {
+        const response = await fetch(`${API_ENDPOINTS.videos.list}?page=0&size=10`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data && data.data && data.data.length > 0) {
+            setVideos(data.data)
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch videos:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchVideos()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <section className="py-20 bg-gradient-to-b from-background to-muted flex items-center justify-center min-h-[400px]">
+        <Loader2 className="animate-spin h-12 w-12 text-primary" />
+      </section>
+    )
   }
 
-  const currentVideo = videos[activeVideo as keyof typeof videos]
+  if (videos.length === 0) {
+    return null // Hide section if no videos are available
+  }
+
+  const currentVideo = videos[activeVideoIndex]
 
   return (
     <section className="py-20 bg-gradient-to-b from-background to-muted">
@@ -37,7 +58,7 @@ export function VideoSection() {
             {!isPlaying ? (
               <>
                 <img
-                  src={currentVideo.thumbnail || "/placeholder.svg"}
+                  src={currentVideo.thumbnailUrl || "/placeholder.svg"}
                   alt={currentVideo.title}
                   className="w-full h-full object-cover"
                 />
@@ -56,43 +77,34 @@ export function VideoSection() {
               </>
             ) : (
               <video
-                key={activeVideo}
+                key={activeVideoIndex}
                 className="w-full h-full object-cover"
                 controls
                 autoPlay
                 controlsList="nodownload"
                 onEnded={() => setIsPlaying(false)}
               >
-                <source src={currentVideo.url} type="video/mp4" />
+                <source src={currentVideo.videoUrl} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
             )}
           </div>
 
           {/* Video selector */}
-          <div className="flex gap-4 justify-center mt-8">
-            <button
-              onClick={() => {
-                setActiveVideo(1)
-                setIsPlaying(false)
-              }}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-                activeVideo === 1 ? "bg-blue-600 text-white shadow-lg" : "bg-muted text-foreground hover:bg-muted/80"
-              }`}
-            >
-              Patient Story
-            </button>
-            <button
-              onClick={() => {
-                setActiveVideo(2)
-                setIsPlaying(false)
-              }}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-                activeVideo === 2 ? "bg-blue-600 text-white shadow-lg" : "bg-muted text-foreground hover:bg-muted/80"
-              }`}
-            >
-              Our Approach
-            </button>
+          <div className="flex flex-wrap gap-4 justify-center mt-8">
+            {videos.map((video, index) => (
+              <button
+                key={video.id}
+                onClick={() => {
+                  setActiveVideoIndex(index)
+                  setIsPlaying(false)
+                }}
+                className={`px-6 py-3 rounded-xl font-semibold transition-all ${activeVideoIndex === index ? "bg-blue-600 text-white shadow-lg" : "bg-muted text-foreground hover:bg-muted/80"
+                  }`}
+              >
+                {video.title}
+              </button>
+            ))}
           </div>
         </div>
       </div>

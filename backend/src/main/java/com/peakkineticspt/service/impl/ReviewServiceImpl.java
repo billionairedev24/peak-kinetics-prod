@@ -3,7 +3,9 @@ package com.peakkineticspt.service.impl;
 import com.peakkineticspt.dto.ReviewDTOs;
 import com.peakkineticspt.entity.Review;
 import com.peakkineticspt.repository.ReviewRepository;
+import com.peakkineticspt.service.IEmailNotificationService;
 import com.peakkineticspt.service.IReviewService;
+import com.peakkineticspt.service.ISmsNotificationService;
 import com.resend.core.exception.ResendException;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -17,7 +19,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -37,8 +38,9 @@ import java.util.Objects;
 public class ReviewServiceImpl implements IReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final EmailService emailService;
-    private final SmsService smsService;
+    private final IEmailNotificationService emailService;
+    private final ISmsNotificationService smsService;
+    private final GoogleBusinessProfileService googleBusinessProfileService;
     private final Tracer tracer;
 
     @Override
@@ -48,7 +50,7 @@ public class ReviewServiceImpl implements IReviewService {
             Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             if (principal instanceof UserDetails) {
                 String user = ((UserDetails) principal).getUsername();
-                if(Objects.nonNull(user)){
+                if (Objects.nonNull(user)) {
                     return reviewRepository.findAll(PageRequest.of(page, size))
                             .map(this::toResponse);
                 }
@@ -65,6 +67,14 @@ public class ReviewServiceImpl implements IReviewService {
     public ReviewDTOs.ReviewResponse createReview(ReviewDTOs.CreateReviewRequest request) {
         Span span = tracer.spanBuilder("review.create").startSpan();
         try {
+            if (request.getRating() < 1 || request.getRating() > 5) {
+                throw new IllegalArgumentException("Rating must be between 1 and 5");
+            }
+
+            if (request.getText() == null || request.getText().trim().length() < 10) {
+                throw new IllegalArgumentException("Review text must be at least 10 characters long");
+            }
+
             Review review = Review.builder()
                     .name(request.getName())
                     .rating(request.getRating())
@@ -111,7 +121,8 @@ public class ReviewServiceImpl implements IReviewService {
     }
 
     @Override
-    public void sendReviewRequest(ReviewDTOs.SendReviewRequestDTO request, HttpServletRequest httpServletRequest) throws ResendException {
+    public void sendReviewRequest(ReviewDTOs.SendReviewRequestDTO request, HttpServletRequest httpServletRequest)
+            throws ResendException {
         Span span = tracer.spanBuilder("review.sendRequest").startSpan();
         try {
             if (request.getEmail() != null && !request.getEmail().isBlank()) {
@@ -119,7 +130,26 @@ public class ReviewServiceImpl implements IReviewService {
             }
 
             if (request.getPhone() != null && !request.getPhone().isBlank()) {
-                //smsService.sendReviewRequestSms(request.getPhone(), request.getName());
+                smsService.sendReviewRequestSms(request.getPhone(), request.getName());
+            }
+
+            span.setAttribute("client.name", request.getName());
+        } finally {
+            span.end();
+        }
+    }
+
+    @Override
+    public void sendReferralRequest(ReviewDTOs.SendReferralRequestDTO request, HttpServletRequest httpServletRequest)
+            throws ResendException {
+        Span span = tracer.spanBuilder("review.sendReferralRequest").startSpan();
+        try {
+            if (request.getEmail() != null && !request.getEmail().isBlank()) {
+                emailService.sendReferralRequestEmail(request.getEmail(), request.getName(), httpServletRequest);
+            }
+
+            if (request.getPhone() != null && !request.getPhone().isBlank()) {
+                smsService.sendReferralRequestSms(request.getPhone(), request.getName());
             }
 
             span.setAttribute("client.name", request.getName());
@@ -138,7 +168,7 @@ public class ReviewServiceImpl implements IReviewService {
             int skipped = 0;
 
             try (InputStream inputStream = file.getInputStream();
-                 Workbook workbook = new XSSFWorkbook(inputStream)) {
+                    Workbook workbook = new XSSFWorkbook(inputStream)) {
 
                 // Get the third sheet (index 2) named "All Data"
                 Sheet sheet = workbook.getSheetAt(2);
@@ -246,11 +276,40 @@ public class ReviewServiceImpl implements IReviewService {
                 .text(review.getText())
                 .date(formatDate(review.getCreatedAt()))
                 .createdAt(review.getCreatedAt())
+                .source(review.getSource() != null ? review.getSource().name() : "LOCAL")
+                .googleReviewId(review.getGoogleReviewId())
+                .authorUrl(review.getAuthorUrl())
+                .authorPhotoUrl(review.getAuthorPhotoUrl())
+                .reply(review.getReply())
                 .build();
     }
 
     private String formatDate(LocalDateTime dateTime) {
         return dateTime.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"));
+    }
+
+    @Override
+    @Transactional
+    public int syncGoogleReviews() {
+        Span span = tracer.spanBuilder("review.syncGoogle").startSpan();
+        try {
+            log.info("Starting Google Reviews sync...");
+            List<Review> googleReviews = googleBusinessProfileService.fetchBusinessReviews();
+
+            int newReviewsCount = 0;
+            for (Review review : googleReviews) {
+                if (!reviewRepository.existsByGoogleReviewId(review.getGoogleReviewId())) {
+                    reviewRepository.save(review);
+                    newReviewsCount++;
+                }
+            }
+
+            log.info("Finished Google Reviews sync. Imported {} new reviews.", newReviewsCount);
+            span.setAttribute("synced.count", newReviewsCount);
+            return newReviewsCount;
+        } finally {
+            span.end();
+        }
     }
 
 }

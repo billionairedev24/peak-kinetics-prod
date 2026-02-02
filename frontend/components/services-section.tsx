@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Activity, Heart, Zap, Target, Users, Clock, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { BodyMap } from "./BodyMap"
 
 export function ServicesSection() {
   const services = [
@@ -67,7 +68,9 @@ export function ServicesSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <BodyMap />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-20">
           {services.map((service) => (
             <Card
               key={service.title}

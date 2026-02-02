@@ -2,28 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Calendar, Phone, ChevronDown, Shield } from "lucide-react"
+import { Menu, X, Calendar, Phone, ChevronDown, Shield, Activity, Heart, Target, Zap, Milestone, Home } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { SchedulingIframeModal } from "./scheduling-iframe-modal"
 import { useScheduling } from "./scheduling-context"
 import Link from "next/link"
-
-function LogoComponent() {
-  return (
-      <div className="flex items-center gap-3">
-        {/* Logo Box */}
-        <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
-          <span className="text-white font-bold text-2xl">PK</span>
-        </div>
-
-        {/* Text Section */}
-        <div className="flex flex-col gap-0.5">
-          <p className="text-base font-bold text-foreground leading-tight">Peak Kinetics</p>
-          <p className="text-xs text-muted-foreground font-medium leading-tight">Physical Therapy</p>
-        </div>
-      </div>
-  )
-}
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -33,237 +17,215 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
+      setIsScrolled(window.scrollY > 20)
     }
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  useEffect(() => {
-    if (isMenuOpen) {
-      document.body.classList.add("mobile-menu-open")
-    } else {
-      document.body.classList.remove("mobile-menu-open")
-    }
-
-    return () => {
-      document.body.classList.remove("mobile-menu-open")
-    }
-  }, [isMenuOpen])
-
   const navItems = [
     { href: "/", label: "Home" },
     { href: "/#services", label: "Services", hasDropdown: true },
     { href: "/#about", label: "About" },
+    { href: "/journey", label: "My Journey" },
+    { href: "/prep-guide", label: "Prep Guide" },
     { href: "/blog", label: "Blog" },
     { href: "/#contact", label: "Contact" },
   ]
 
-  const services = [
-    { name: "Sports Rehabilitation", href: "/#services" },
-    { name: "Orthopedic Therapy", href: "/#services" },
-    { name: "Pain Management", href: "/#services" },
-    { name: "Movement Screening", href: "/#services" },
-    { name: "Geriatric Care", href: "/#services" },
-    { name: "Wellness Program", href: "/#services" },
+  const servicesList = [
+    { name: "Sports Rehabilitation", href: "/services/sports-rehabilitation", icon: Activity },
+    { name: "Orthopedic Therapy", href: "/services/orthopedic-therapy", icon: Heart },
+    { name: "Pain Management", href: "/services/pain-management", icon: Target },
+    { name: "Movement Screening", href: "/services/movement-screening", icon: Zap },
+    { name: "Geriatric Care", href: "/services/geriatric-care", icon: Heart },
+    { name: "Wellness Program", href: "/services/wellness-program", icon: Activity },
   ]
 
-  const handleBookAppointment = () => {
-    openScheduling()
-  }
-
   return (
-      <>
-        <header
-            className={cn(
-                "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
-                isScrolled
-                    ? "bg-background/95 backdrop-blur-xl shadow-2xl border-b border-primary/20"
-                    : "bg-background/80 backdrop-blur-md shadow-lg",
-            )}
-        >
-          <nav className="container mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
-              {/* Logo Section */}
-              <div className="flex-shrink-0">
-                <Link href="/">
-                  <LogoComponent />
-                </Link>
+    <>
+      <header
+        className={cn(
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-300 w-full",
+          isScrolled
+            ? "bg-white/80 backdrop-blur-xl border-b border-black/5 shadow-sm"
+            : "bg-white border-b border-transparent"
+        )}
+      >
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+          <nav className="flex items-center justify-between h-20 overflow-visible">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-4 group">
+              <div className="w-11 h-11 bg-[#2b59e1] rounded-xl flex items-center justify-center shadow-[0_4px_12px_rgba(43,89,225,0.25)] group-hover:scale-105 transition-transform duration-300">
+                <span className="text-white font-bold text-xl tracking-tight">PK</span>
               </div>
+              <div className="flex flex-col">
+                <p className="text-[17px] font-bold text-[#1a1a1a] tracking-tight leading-none mb-1">Peak Kinetics</p>
+                <p className="text-[11px] font-medium text-[#666] leading-none">Physical Therapy</p>
+              </div>
+            </Link>
 
-              {/* Desktop Navigation */}
-              <div className="hidden lg:flex items-center gap-10">
-                {navItems.map((item) => (
-                    <div key={item.href} className="relative group">
-                      {item.hasDropdown ? (
-                          <div
-                              className="relative"
-                              onMouseEnter={() => setIsServicesDropdownOpen(true)}
-                              onMouseLeave={() => setIsServicesDropdownOpen(false)}
-                          >
-                            <Link
-                                href={item.href}
-                                className="text-foreground hover:text-primary transition-all duration-300 font-semibold text-sm flex items-center gap-1 py-2"
-                            >
-                              {item.label}
-                              <ChevronDown
-                                  className={cn(
-                                      "h-4 w-4 transition-transform duration-200",
-                                      isServicesDropdownOpen && "rotate-180",
-                                  )}
-                              />
-                              <span className="absolute -bottom-1 left-0 w-0 h-1 bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-300 group-hover:w-full"></span>
-                            </Link>
+            {/* Desktop Nav - Centered */}
+            <div className="hidden lg:flex items-center gap-10 absolute left-1/2 -translate-x-1/2">
+              {navItems.filter(item => ["Home", "Services", "About", "Blog", "Contact"].includes(item.label)).map((item) => (
+                <div key={item.label} className="relative group">
+                  {item.hasDropdown ? (
+                    <div
+                      onMouseEnter={() => setIsServicesDropdownOpen(true)}
+                      onMouseLeave={() => setIsServicesDropdownOpen(false)}
+                      className="relative py-2"
+                    >
+                      <Link
+                        href={item.href}
+                        className="text-[14px] font-bold text-[#1a1a1a]/70 hover:text-[#2b59e1] transition-colors flex items-center gap-1.5"
+                      >
+                        {item.label}
+                        <ChevronDown className={cn("w-4 h-4 transition-transform duration-300 opacity-60", isServicesDropdownOpen && "rotate-180")} />
+                      </Link>
 
-                            {/* Services Dropdown */}
-                            <div
-                                className={cn(
-                                    "absolute top-full left-0 mt-2 w-64 bg-background/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-primary/20 py-4 transition-all duration-300 transform",
-                                    isServicesDropdownOpen
-                                        ? "opacity-100 visible translate-y-0"
-                                        : "opacity-0 invisible -translate-y-2",
-                                )}
-                            >
-                              <div className="px-4 pb-2 mb-2 border-b border-border/50">
-                                <h3 className="font-semibold text-foreground text-sm">Our Services</h3>
-                              </div>
-                              {services.map((service, index) => (
-                                  <Link
-                                      key={service.name}
-                                      href={service.href}
-                                      className="block px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-200 rounded-lg mx-2"
-                                      style={{ animationDelay: `${index * 50}ms` }}
-                                  >
-                                    {service.name}
-                                  </Link>
-                              ))}
-                            </div>
-                          </div>
-                      ) : (
-                          <Link
-                              href={item.href}
-                              className="text-foreground hover:text-primary transition-all duration-300 font-semibold text-sm relative py-2"
+                      {/* Dropdown */}
+                      <AnimatePresence>
+                        {isServicesDropdownOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 5 }}
+                            className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 bg-white border border-[#eee] rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.08)] p-3 grid gap-1 z-[60]"
                           >
-                            {item.label}
-                            <span className="absolute -bottom-1 left-0 w-0 h-1 bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-300 group-hover:w-full"></span>
-                          </Link>
-                      )}
+                            {servicesList.map((service) => (
+                              <Link
+                                key={service.name}
+                                href={service.href}
+                                className="group/item flex items-center gap-3.5 p-3 rounded-xl hover:bg-[#2b59e1]/5 transition-all"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-[#2b59e1]/5 flex items-center justify-center group-hover/item:bg-[#2b59e1] transition-colors">
+                                  <service.icon className="w-4 h-4 text-[#2b59e1] group-hover/item:text-white" />
+                                </div>
+                                <span className="text-[13px] font-bold text-[#444] group-hover/item:text-[#2b59e1]">
+                                  {service.name}
+                                </span>
+                              </Link>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                ))}
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className="text-[14px] font-bold text-[#1a1a1a]/70 hover:text-[#2b59e1] transition-colors py-2 block relative group"
+                    >
+                      {item.label}
+                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#2b59e1] transition-all duration-300 group-hover:w-full rounded-full" />
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Right Actions */}
+            <div className="flex items-center gap-5">
+              <div className="hidden xl:flex items-center gap-3.5 mr-2">
+                <div className="w-10 h-10 rounded-full bg-[#2b59e1]/5 flex items-center justify-center">
+                  <Phone className="w-4.5 h-4.5 text-[#2b59e1]" />
+                </div>
+                <div className="flex flex-col">
+                  <a href="tel:737-368-2653" className="text-[15px] font-bold text-[#1a1a1a] hover:text-[#2b59e1] transition-colors leading-none mb-1">
+                    737-368-2653
+                  </a>
+                  <p className="text-[10px] font-semibold text-[#888] tracking-wider uppercase leading-none">24/7</p>
+                </div>
               </div>
 
-              {/* Desktop CTA Section */}
-              <div className="hidden lg:flex items-center gap-6">
-                <a
-                    href="tel:737-368-2653"
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-primary/5 transition-all duration-300 whitespace-nowrap"
-                >
-                  <Phone className="h-5 w-5 text-primary flex-shrink-0" />
-                  <div className="text-left">
-                    <p className="text-sm font-bold text-foreground">737-368-2653</p>
-                    <p className="text-xs text-muted-foreground">24/7</p>
-                  </div>
-                </a>
-                <Link
-                    href="/admin"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 hover:bg-primary/15 transition-all duration-300 whitespace-nowrap group border border-primary/20"
-                >
-                  <Shield className="h-4 w-4 text-primary flex-shrink-0" />
-                  <span className="text-sm font-semibold text-primary transition-colors">Admin</span>
+              <div className="flex items-center gap-3">
+                <Link href="/admin" className="hidden md:flex items-center gap-2 text-[13px] font-bold text-[#2b59e1] hover:bg-[#2b59e1]/5 px-4 py-2.5 rounded-xl border border-[#2b59e1]/20 transition-all">
+                  <Shield className="w-4 h-4" />
+                  Admin
                 </Link>
-                <Button className="cta-button px-8 py-2.5 flex-shrink-0" onClick={handleBookAppointment}>
-                  <Calendar className="h-4 w-4 mr-2" />
+
+                <Button
+                  onClick={() => openScheduling()}
+                  className="rounded-xl px-6 py-3 h-12 text-[14px] font-bold bg-[#2b59e1] hover:bg-[#1e48c7] text-white shadow-[0_8px_20px_rgba(43,89,225,0.2)] transition-all flex items-center gap-2.5"
+                >
+                  <Calendar className="w-4.5 h-4.5" />
                   Schedule Appointment
                 </Button>
-              </div>
 
-              {/* Mobile Actions */}
-              <div className="flex lg:hidden items-center gap-2">
-                <Link
-                    href="/admin"
-                    className="p-2.5 rounded-xl bg-primary/10 hover:bg-primary/20 transition-all duration-300"
-                    aria-label="Admin portal"
-                >
-                  <Shield className="h-6 w-6 text-primary" />
-                </Link>
-                <a
-                    href="tel:737-368-2653"
-                    className="p-2.5 rounded-xl bg-primary/10 hover:bg-primary/20 transition-all duration-300"
-                    aria-label="Call us"
-                >
-                  <Phone className="h-6 w-6 text-primary" />
-                </a>
-                <Button size="sm" className="cta-button px-3 py-2" onClick={handleBookAppointment}>
-                  <Calendar className="h-4 w-4" />
-                </Button>
+                {/* Mobile Menu Toggle */}
                 <button
-                    className="p-2.5 rounded-xl hover:bg-primary/10 transition-all duration-300"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Toggle menu"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="lg:hidden w-11 h-11 flex items-center justify-center rounded-xl bg-[#f5f5f5] text-[#1a1a1a] hover:bg-[#2b59e1]/10 hover:text-[#2b59e1] transition-all"
                 >
-                  {isMenuOpen ? <X className="h-6 w-6 text-foreground" /> : <Menu className="h-6 w-6 text-foreground" />}
+                  {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                 </button>
               </div>
             </div>
-
-            {/* Mobile Menu */}
-            {isMenuOpen && (
-                <div className="mobile-menu lg:hidden">
-                  <div className="container mx-auto px-6 py-8 h-full overflow-y-auto">
-                    <div className="flex flex-col space-y-6 min-h-full justify-center">
-                      {navItems.map((item, index) => (
-                          <Link
-                              key={item.href}
-                              href={item.href}
-                              onClick={() => {
-                                setIsMenuOpen(false)
-                              }}
-                              className="mobile-menu-item animate-slide-in-left text-center"
-                              style={{ animationDelay: `${index * 0.1}s` }}
-                          >
-                            {item.label}
-                          </Link>
-                      ))}
-                      <Link
-                          href="/admin"
-                          onClick={() => setIsMenuOpen(false)}
-                          className="mobile-menu-item animate-slide-in-left text-center text-primary"
-                          style={{ animationDelay: `${navItems.length * 0.1}s` }}
-                      >
-                        Admin Portal
-                      </Link>
-                      <div
-                          className="pt-8 border-t border-border/50 animate-slide-in-left"
-                          style={{ animationDelay: "0.4s" }}
-                      >
-                        <div className="flex items-center justify-center gap-4 mb-6">
-                          <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center">
-                            <Phone className="h-6 w-6 text-primary" />
-                          </div>
-                          <div className="text-left">
-                            <p className="text-xl font-bold text-foreground">737-368-2653</p>
-                            <p className="text-sm text-muted-foreground">Call Anytime</p>
-                          </div>
-                        </div>
-                        <Button
-                            className="cta-button w-full py-4 text-lg"
-                            onClick={() => {
-                              handleBookAppointment()
-                              setIsMenuOpen(false)
-                            }}
-                        >
-                          <Calendar className="h-5 w-5 mr-2" />
-                          Schedule Now
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-            )}
           </nav>
-        </header>
+        </div>
+      </header>
 
-        <SchedulingIframeModal isOpen={isSchedulingOpen} onClose={closeScheduling} />
-      </>
+      {/* Fullscreen Mobile Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: "100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-40 bg-background/98 backdrop-blur-2xl lg:hidden flex flex-col p-8 pt-32"
+          >
+            <div className="flex flex-col gap-6">
+              {navItems.map((item, i) => (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  key={item.label}
+                >
+                  <Link
+                    href={item.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-4xl font-black text-foreground hover:text-primary transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                </motion.div>
+              ))}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <Link
+                  href="/admin"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-2xl font-black text-primary flex items-center gap-2 mt-8"
+                >
+                  <Shield className="w-6 h-6" />
+                  ADMIN PORTAL
+                </Link>
+              </motion.div>
+            </div>
+
+            <div className="mt-auto space-y-8">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <Phone className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xl font-black text-foreground">737.368.2653</p>
+                  <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Call or Text Anytime</p>
+                </div>
+              </div>
+              <Button onClick={() => { openScheduling(); setIsMenuOpen(false); }} className="w-full h-16 text-xl font-black rounded-3xl bg-primary shadow-2xl shadow-primary/30">
+                BOOK EVALUATION
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <SchedulingIframeModal isOpen={isSchedulingOpen} onClose={closeScheduling} />
+    </>
   )
 }

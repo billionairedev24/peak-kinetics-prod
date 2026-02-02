@@ -23,6 +23,7 @@ public class ReviewDTOs {
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class CreateReviewRequest {
         @NotBlank(message = "Name is required")
         @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
@@ -51,6 +52,11 @@ public class ReviewDTOs {
         private String text;
         private String date;
         private LocalDateTime createdAt;
+        private String source;
+        private String googleReviewId;
+        private String authorUrl;
+        private String authorPhotoUrl;
+        private String reply;
     }
 
     @Getter
@@ -65,8 +71,28 @@ public class ReviewDTOs {
         @Email(message = "Invalid email format")
         private String email;
 
-
         @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "Phone must be in E.164 format")
+        private String phone;
+
+        @AssertTrue(message = "Either email or phone must be provided")
+        private boolean isContactProvided() {
+            return (email != null && !email.isBlank()) || (phone != null && !phone.isBlank());
+        }
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SendReferralRequestDTO {
+        @NotBlank(message = "Client name is required")
+        @Size(min = 2, max = 200, message = "Client name must be between 2 and 200 characters")
+        private String name;
+
+        @Email(message = "Invalid email format")
+        private String email;
+
+        @Pattern(regexp = "^[+]?[0-9\\s-]{10,20}$", message = "Phone must be a valid format")
         private String phone;
 
         @AssertTrue(message = "Either email or phone must be provided")
@@ -83,4 +109,3 @@ public class ReviewDTOs {
         private List<String> errors;
     }
 }
-

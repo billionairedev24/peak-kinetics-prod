@@ -62,6 +62,7 @@ public class BlogPost {
     @Column(name = "featured_image", length = 500)
     private String featuredImage;
 
+    @Builder.Default
     @NotBlank(message = "Status is required")
     @Pattern(regexp = "^(published|draft)$", message = "Status must be 'published' or 'draft'")
     @Column(nullable = false, length = 20)

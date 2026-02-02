@@ -46,25 +46,10 @@ management:
   tracing:
     sampling:
       probability: 0.1
-  otlp:
-    metrics:
-      export:
-        url: http://localhost:4318/v1/metrics
-  opentelemetry:
-    tracing:
-      export:
-        otlp:
-          endpoint: http://localhost:4318/v1/traces
-    logging:
-      export:
-        otlp:
-          endpoint: http://localhost:4318/v1/logs
 
 storage:
   upload-dir: uploads
 
 logging:
   level:
-    com.peakkineticspt: INFO
-    org.springframework.boot.docker.compose: DEBUG
-    org.springframework.boot.actuate.autoconfigure: DEBUG
+    root: INFO

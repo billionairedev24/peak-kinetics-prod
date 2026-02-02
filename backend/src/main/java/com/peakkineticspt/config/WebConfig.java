@@ -14,9 +14,27 @@ import java.io.IOException;
 @Slf4j
 public class WebConfig implements WebMvcConfigurer {
 
+    @Override
+    public void addCorsMappings(org.springframework.web.servlet.config.annotation.CorsRegistry registry) {
+        registry.addMapping("/api/**")
+                .allowedOrigins("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*");
+        registry.addMapping("/uploads/**")
+                .allowedOrigins("*")
+                .allowedMethods("GET", "OPTIONS")
+                .allowedHeaders("*");
+    }
+
+    @org.springframework.beans.factory.annotation.Value("${storage.upload-dir:uploads}")
+    private String uploadDir;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Serve local uploads
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:" + uploadDir + "/");
+
         // Serve _next static files with caching
         registry.addResourceHandler("/_next/**")
                 .addResourceLocations("classpath:/static/_next/")
@@ -53,7 +71,8 @@ public class WebConfig implements WebMvcConfigurer {
                         }
 
                         // Try with /index.html appended (for routes like /admin/login)
-                        String indexPath = resourcePath.endsWith("/") ? resourcePath + "index.html" : resourcePath + "/index.html";
+                        String indexPath = resourcePath.endsWith("/") ? resourcePath + "index.html"
+                                : resourcePath + "/index.html";
                         Resource indexResource = location.createRelative(indexPath);
                         if (indexResource.exists() && indexResource.isReadable()) {
                             log.debug("Found index resource: {}", indexPath);

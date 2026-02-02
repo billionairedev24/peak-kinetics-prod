@@ -137,8 +137,9 @@ export function Footer() {
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                 <div className="text-muted-foreground">
-                  <div>1 Chisholm Trail, Suite 450</div>
-                  <div>Round Rock, TX 78681</div>
+                  <div className="font-bold text-foreground">Mobile Service</div>
+                  <div>Serving Round Rock &</div>
+                  <div>Surrounding Areas</div>
                 </div>
               </div>
 

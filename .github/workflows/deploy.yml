@@ -2,15 +2,15 @@ name: Build and Deploy to GCP
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
   workflow_dispatch:
     inputs:
       action:
-        description: 'Deployment action'
+        description: "Deployment action"
         required: true
-        default: 'deploy'
+        default: "deploy"
         type: choice
         options:
           - deploy
@@ -31,14 +31,14 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          java-version: "21"
+          distribution: "temurin"
           cache: maven
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -100,6 +100,16 @@ jobs:
           TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}
           TWILIO_PHONE_NUMBER=${{ secrets.TWILIO_PHONE_NUMBER }}
           GOOGLE_PLACES_API_KEY=${{ secrets.GOOGLE_PLACES_API_KEY }}
+          GOOGLE_PLACES_PLACE_ID=${{ secrets.GOOGLE_PLACES_PLACE_ID }}
+          UPLOADTHING_TOKEN=${{ secrets.UPLOADTHING_TOKEN }}
+          GOOGLE_OAUTH_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET=${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          GOOGLE_OAUTH_REFRESH_TOKEN=${{ secrets.GOOGLE_OAUTH_REFRESH_TOKEN }}
+          GOOGLE_BUSINESS_ACCOUNT=${{ secrets.GOOGLE_BUSINESS_ACCOUNT }}
+          GOOGLE_BUSINESS_LOCATION=${{ secrets.GOOGLE_BUSINESS_LOCATION }}
+          VONAGE_API_KEY=${{ secrets.VONAGE_API_KEY }}
+          VONAGE_API_SECRET=${{ secrets.VONAGE_API_SECRET }}
+          VONAGE_FROM_NUMBER=${{ secrets.VONAGE_FROM_NUMBER }}
           SPRING_PROFILES_ACTIVE=prod
           EOF
           scp -i ~/.ssh/gcp_key .env ${{ secrets.GCP_VM_USER }}@${{ secrets.INSTANCE_IP }}:~/deployment/.env
@@ -110,7 +120,7 @@ jobs:
           ssh -i ~/.ssh/gcp_key ${{ secrets.GCP_VM_USER }}@${{ secrets.INSTANCE_IP }} bash << 'ENDSSH'
           set -e
           cd ~/deployment
-          
+
           if [ -f app.pid ] && kill -0 $(cat app.pid) 2>/dev/null; then
             echo "Stopping existing Spring Boot application..."
             kill -TERM $(cat app.pid) || true
@@ -128,25 +138,25 @@ jobs:
             fi
             rm -f app.pid
           fi
-          
+
           echo "Starting LGTM observability stack..."
           docker compose down || true
           docker compose up -d
-          
+
           echo "Waiting for observability stack..."
           sleep 10
-          
+
           echo "Starting Spring Boot application..."
           cd backend/target
           JAR_FILE=$(ls *.jar | head -n 1)
-          
+
           set -a
           source <(grep -v '^#' ~/deployment/.env | grep -v '^$')
           set +a
-          
+
           nohup java -Dspring.profiles.active=prod -jar "$JAR_FILE" > ~/deployment/app.log 2>&1 &
           echo $! > ~/deployment/app.pid
-          
+
           echo "Application started with PID: $(cat ~/deployment/app.pid)"
           echo "Logs: ~/deployment/app.log"
           ENDSSH
@@ -155,7 +165,7 @@ jobs:
         run: |
           echo "Waiting for application to start..."
           sleep 30
-          
+
           for i in {1..10}; do
             if curl -f https://peakkineticspt.com/actuator/health; then
               echo "✅ Deployment successful! Application is healthy."
@@ -165,9 +175,9 @@ jobs:
             echo "Attempt $i failed, retrying in 10 seconds..."
             sleep 10
           done
-          
+
           echo "❌ Health check failed after 10 attempts"
-          
+
           ssh -i ~/.ssh/gcp_key ${{ secrets.GCP_VM_USER }}@${{ secrets.INSTANCE_IP }} bash << 'ENDSSH'
           echo "=== Last 50 lines of application logs ==="
           tail -n 50 ~/deployment/app.log
@@ -212,9 +222,9 @@ jobs:
           ssh -i ~/.ssh/gcp_key ${{ secrets.GCP_VM_USER }}@${{ secrets.INSTANCE_IP }} bash << 'ENDSSH'
           set -e
           cd ~/deployment
-          
+
           ACTION="${{ github.event.inputs.action }}"
-          
+
           if [ "$ACTION" = "stop" ]; then
             echo "🛑 Stopping application..."
             if [ -f app.pid ] && kill -0 $(cat app.pid) 2>/dev/null; then
@@ -231,7 +241,7 @@ jobs:
             echo "Stopping Docker Compose stack..."
             docker compose down
             echo "✅ Observability stack stopped"
-          
+
           elif [ "$ACTION" = "start" ]; then
             echo "▶️  Starting observability stack..."
             docker compose up -d
@@ -245,7 +255,7 @@ jobs:
             nohup java -Dspring.profiles.active=prod -jar "$JAR_FILE" > ~/deployment/app.log 2>&1 &
             echo $! > ~/deployment/app.pid
             echo "✅ Application started with PID: $(cat ~/deployment/app.pid)"
-          
+
           elif [ "$ACTION" = "restart" ]; then
             echo "🔄 Restarting application..."
             if [ -f app.pid ] && kill -0 $(cat app.pid) 2>/dev/null; then
@@ -266,7 +276,7 @@ jobs:
             nohup java -Dspring.profiles.active=prod -jar "$JAR_FILE" > ~/deployment/app.log 2>&1 &
             echo $! > ~/deployment/app.pid
             echo "✅ Application restarted with PID: $(cat ~/deployment/app.pid)"
-          
+
           elif [ "$ACTION" = "status" ]; then
             echo "📊 Application Status"
             echo "===================="

@@ -6,6 +6,12 @@ export const API_ENDPOINTS = {
     create: `${API_BASE_URL}/reviews`,
     import: `${API_BASE_URL}/reviews/admin/import`,
     sendRequest: `${API_BASE_URL}/reviews/admin/send-request`,
+    sync: `${API_BASE_URL}/reviews/admin/sync`,
+  },
+  videos: {
+    list: `${API_BASE_URL}/videos`,
+    create: `${API_BASE_URL}/videos`,
+    delete: (id: number) => `${API_BASE_URL}/videos/${id}`,
   },
   messages: {
     create: `${API_BASE_URL}/messages`,

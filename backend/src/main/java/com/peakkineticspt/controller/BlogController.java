@@ -22,10 +22,13 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/blog")
-@RequiredArgsConstructor
 public class BlogController {
 
     private final IBlogService blogService;
+
+    public BlogController(IBlogService blogService) {
+        this.blogService = blogService;
+    }
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllPosts(
@@ -41,8 +44,7 @@ public class BlogController {
                 "data", posts.getContent(),
                 "total", posts.getTotalElements(),
                 "page", posts.getNumber(),
-                "pageSize", posts.getSize()
-        ));
+                "pageSize", posts.getSize()));
     }
 
     @GetMapping("/{postId}")
@@ -50,19 +52,18 @@ public class BlogController {
         BlogDTOs.BlogResponse post = blogService.getPostById(postId);
         return ResponseEntity.ok(Map.of(
                 "success", true,
-                "data", post
-        ));
+                "data", post));
     }
 
     @PostMapping("/admin/{authorId}")
-    public ResponseEntity<Map<String, Object>> createPost(@Valid @RequestBody BlogDTOs.CreateBlogRequest request, @PathVariable long authorId) {
+    public ResponseEntity<Map<String, Object>> createPost(@Valid @RequestBody BlogDTOs.CreateBlogRequest request,
+            @PathVariable long authorId) {
 
         BlogDTOs.BlogResponse response = blogService.createPost(request, authorId);
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "Blog post created successfully",
-                "data", response
-        ));
+                "data", response));
     }
 
     @PutMapping("/admin/blog/{postId}")
@@ -73,8 +74,7 @@ public class BlogController {
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "Blog post updated successfully",
-                "data", response
-        ));
+                "data", response));
     }
 
     @DeleteMapping("/admin/blog/{postId}")
@@ -82,8 +82,7 @@ public class BlogController {
         blogService.deletePost(postId);
         return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "Blog post deleted successfully"
-        ));
+                "message", "Blog post deleted successfully"));
     }
 
     @PostMapping("/admin/blog/upload")
@@ -94,8 +93,6 @@ public class BlogController {
                 "url", url,
                 "filename", Objects.requireNonNull(file.getOriginalFilename()),
                 "size", file.getSize(),
-                "contentType", Objects.requireNonNull(file.getContentType())
-        ));
+                "contentType", Objects.requireNonNull(file.getContentType())));
     }
 }
-

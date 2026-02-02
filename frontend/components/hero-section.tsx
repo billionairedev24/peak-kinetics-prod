@@ -43,23 +43,6 @@ export function HeroSection() {
 
   return (
     <>
-      <div className="w-full bg-gradient-to-r from-blue-600 to-blue-500 py-3 sm:py-4">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <Truck className="h-6 w-6 sm:h-7 sm:w-7 text-white flex-shrink-0" />
-              <div className="min-w-0">
-                <h2 className="text-base sm:text-lg font-bold text-white truncate">Mobile Outpatient</h2>
-                <p className="text-xs sm:text-sm text-white/90 truncate">Healthcare comes to you</p>
-              </div>
-            </div>
-            <div className="bg-white/30 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 flex-shrink-0">
-              <span className="text-xs sm:text-sm text-white font-semibold whitespace-nowrap">Available Now</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <section
         id="home"
         className="relative min-h-screen flex items-center justify-center overflow-hidden"

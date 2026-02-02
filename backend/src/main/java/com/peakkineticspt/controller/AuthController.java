@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 @RestController
@@ -34,21 +32,22 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<Map<String, Object>> forgotPassword(@Valid @RequestBody AuthDTOs.ForgotPasswordRequest request, HttpServletRequest httpServletRequest) throws ResendException {
+    public ResponseEntity<Map<String, Object>> forgotPassword(
+            @Valid @RequestBody AuthDTOs.ForgotPasswordRequest request, HttpServletRequest httpServletRequest)
+            throws ResendException {
         authService.forgotPassword(request, httpServletRequest);
         return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "Password reset instructions sent to your email"
-        ));
+                "message", "Password reset instructions sent to your email"));
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<Map<String, Object>> resetPassword(@Valid @RequestBody AuthDTOs.ResetPasswordRequest request) throws ResendException {
+    public ResponseEntity<Map<String, Object>> resetPassword(@Valid @RequestBody AuthDTOs.ResetPasswordRequest request)
+            throws ResendException {
         authService.resetPassword(request);
         return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "Password reset successfully"
-        ));
+                "message", "Password reset successfully"));
     }
 
     @GetMapping("/me")

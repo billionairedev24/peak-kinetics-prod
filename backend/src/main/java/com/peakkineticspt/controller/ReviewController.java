@@ -31,18 +31,17 @@ public class ReviewController {
                 "data", reviews.getContent(),
                 "total", reviews.getTotalElements(),
                 "page", page,
-                "pageSize", size
-        ));
+                "pageSize", size));
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createReview(@Valid @RequestBody ReviewDTOs.CreateReviewRequest request) {
+    public ResponseEntity<Map<String, Object>> createReview(
+            @Valid @RequestBody ReviewDTOs.CreateReviewRequest request) {
         ReviewDTOs.ReviewResponse response = reviewService.createReview(request);
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "Thank you for your review!",
-                "data", response
-        ));
+                "data", response));
     }
 
     @GetMapping("/{reviewId}")
@@ -57,13 +56,13 @@ public class ReviewController {
         reviewService.deleteReview(reviewId);
         return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "Review deleted successfully"
-        ));
+                "message", "Review deleted successfully"));
     }
 
     @PostMapping("/admin/send-request")
     public ResponseEntity<Map<String, Object>> sendReviewRequest(
-            @Valid @RequestBody ReviewDTOs.SendReviewRequestDTO request, HttpServletRequest httpServletRequest) throws ResendException {
+            @Valid @RequestBody ReviewDTOs.SendReviewRequestDTO request, HttpServletRequest httpServletRequest)
+            throws ResendException {
         reviewService.sendReviewRequest(request, httpServletRequest);
 
         List<String> sentVia = new java.util.ArrayList<>();
@@ -78,8 +77,28 @@ public class ReviewController {
                 "success", true,
                 "message", "Review request sent successfully to " + request.getName(),
                 "sentVia", sentVia,
-                "reviewUrl", "https://peakkinetics.com/review"
-        ));
+                "reviewUrl", "https://peakkinetics.com/review"));
+    }
+
+    @PostMapping("/admin/send-referral")
+    public ResponseEntity<Map<String, Object>> sendReferralRequest(
+            @Valid @RequestBody ReviewDTOs.SendReferralRequestDTO request, HttpServletRequest httpServletRequest)
+            throws ResendException {
+        reviewService.sendReferralRequest(request, httpServletRequest);
+
+        List<String> sentVia = new java.util.ArrayList<>();
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            sentVia.add("email");
+        }
+        if (request.getPhone() != null && !request.getPhone().isBlank()) {
+            sentVia.add("sms");
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Referral request sent successfully to " + request.getName(),
+                "sentVia", sentVia,
+                "referralUrl", "https://peakkinetics.com/referral"));
     }
 
     @PostMapping("/admin/import")
@@ -91,7 +110,15 @@ public class ReviewController {
                 "message", "Successfully imported " + result.getImported() + " reviews",
                 "imported", result.getImported(),
                 "skipped", result.getSkipped(),
-                "errors", result.getErrors()
-        ));
+                "errors", result.getErrors()));
+    }
+
+    @PostMapping("/admin/sync")
+    public ResponseEntity<Map<String, Object>> syncReviews() {
+        int imported = reviewService.syncGoogleReviews();
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Successfully synced with Google. Imported " + imported + " new reviews.",
+                "imported", imported));
     }
 }
