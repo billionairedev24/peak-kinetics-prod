@@ -3,7 +3,6 @@ package com.peakkineticspt.service.impl;
 import com.peakkineticspt.dto.ReviewDTOs;
 import com.peakkineticspt.entity.Review;
 import com.peakkineticspt.repository.ReviewRepository;
-import com.peakkineticspt.service.impl.GooglePlacesService;
 import java.util.List;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -36,7 +35,7 @@ class ReviewServiceImplTest {
     private Span span;
 
     @Mock
-    private GooglePlacesService googlePlacesService;
+    private GoogleBusinessProfileService googleBusinessProfileService;
 
     @InjectMocks
     private ReviewServiceImpl reviewService;
@@ -103,7 +102,7 @@ class ReviewServiceImplTest {
         Review existingReview = Review.builder().googleReviewId("old-id").build();
         Review newReview = Review.builder().googleReviewId("new-id").build();
 
-        when(googlePlacesService.fetchGoogleReviews()).thenReturn(List.of(existingReview, newReview));
+        when(googleBusinessProfileService.fetchBusinessReviews()).thenReturn(List.of(existingReview, newReview));
         when(reviewRepository.existsByGoogleReviewId("old-id")).thenReturn(true);
         when(reviewRepository.existsByGoogleReviewId("new-id")).thenReturn(false);
 
