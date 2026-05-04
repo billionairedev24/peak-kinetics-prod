@@ -3,7 +3,6 @@ import type { Metadata } from "next"
 import { Playfair_Display, Source_Sans_3 } from "next/font/google"
 import { Suspense } from "react"
 import { SchedulingProvider } from "@/components/scheduling-context"
-import { ThemeProvider } from "@/components/theme-provider"
 import { WebAnalytics } from "@/components/web-analytics"
 import "./globals.css"
 
@@ -292,11 +291,9 @@ export default function RootLayout({
         </script>
       </head>
       <body className={`${playfair.variable} ${sourceSans.variable} font-sans antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <SchedulingProvider>
-            <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
-          </SchedulingProvider>
-        </ThemeProvider>
+        <SchedulingProvider>
+          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        </SchedulingProvider>
         <WebAnalytics />
       </body>
     </html>

@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { SchedulingIframeModal } from "./scheduling-iframe-modal"
 import { useScheduling } from "./scheduling-context"
-import { ModeToggle } from "./mode-toggle"
 import Link from "next/link"
 
 export function Header() {
@@ -143,8 +142,6 @@ export function Header() {
                   </span>
                 </div>
               </a>
-
-              <ModeToggle />
 
               <Link
                 href="/admin"
