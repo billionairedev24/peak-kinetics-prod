@@ -47,6 +47,17 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://peakkineticspt.com",
   },
+  // Icon links generated as <link> tags. Files served as static assets
+  // from public/ (avoids next-on-pages "edge runtime" constraint that
+  // applies to app/icon.png convention routes).
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: { url: "/apple-icon.png", sizes: "180x180" },
+    shortcut: "/favicon.ico",
+  },
   openGraph: {
     title: "Peak Kinetics - Leading Physical Therapy & Movement Science in Austin",
     description:
