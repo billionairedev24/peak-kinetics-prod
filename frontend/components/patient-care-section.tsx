@@ -80,7 +80,7 @@ export function PatientCareSection() {
           <div
             className="h-96 bg-cover bg-center relative"
             style={{
-              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url('/mobile-physical-therapy-professional-in-home-care.jpg')`,
+              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url('/therapist-home-visit-welcoming-patient.jpg')`,
             }}
           >
             <div className="absolute inset-0 flex items-center justify-center">
