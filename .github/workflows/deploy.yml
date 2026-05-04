@@ -1,10 +1,9 @@
 name: Build and Deploy to GCP
 
+# GCP VM deploy is superseded by Fly.io for the backend and Cloudflare for the
+# frontend. Auto-triggers on push/PR are disabled; this workflow only runs when
+# explicitly invoked via the Actions tab (workflow_dispatch).
 on:
-  push:
-    branches: [main, master]
-  pull_request:
-    branches: [main, master]
   workflow_dispatch:
     inputs:
       action:
