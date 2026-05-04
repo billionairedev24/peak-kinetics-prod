@@ -1,31 +1,59 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { adminAuth } from "@/lib/admin-auth"
 
 export default function AdminLoginPage() {
+  const router = useRouter()
   const searchParams = useSearchParams()
-  const hasError = searchParams.has("error")
   const hasLogout = searchParams.has("logout")
+
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(searchParams.has("error") ? "Invalid credentials. Please try again." : null)
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (submitting) return
+    setSubmitting(true)
+    setError(null)
+    try {
+      const user = await adminAuth.login(email, password)
+      if (user) {
+        router.push("/admin/dashboard")
+      } else {
+        setError("Invalid credentials. Please try again.")
+      }
+    } catch {
+      setError("Sign-in failed. Please try again later.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
       <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-            {/* Logo */}
-            <div className="flex justify-center mb-8">
-              <Image
-                  src="/logo-pk-pt.jpg"
-                  alt="Peak Kinetics Logo"
-                  width={200}
-                  height={80}
-                  className="h-16 w-auto"
-                  priority
-              />
+            {/* Logo — prominent display, source PNG is 1024px so it's sharp */}
+            <div className="flex justify-center mb-6">
+              <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-blue-100 p-3 shadow-md ring-1 ring-sky-100">
+                <Image
+                    src="/logo-pk-pt.jpg"
+                    alt="Peak Kinetics Logo"
+                    width={512}
+                    height={512}
+                    className="h-28 w-28 object-contain"
+                    priority
+                />
+              </div>
             </div>
 
             {/* Header */}
@@ -39,65 +67,61 @@ export default function AdminLoginPage() {
             </div>
 
             {/* Alerts */}
-            {hasError && (
+            {error && (
                 <div className="mb-4 bg-red-50 border border-red-200 text-red-800 rounded-lg p-3 text-sm">
-                  Invalid credentials. Please try again.
+                  {error}
                 </div>
             )}
 
-            {hasLogout && (
+            {hasLogout && !error && (
                 <div className="mb-4 bg-green-50 border border-green-200 text-green-800 rounded-lg p-3 text-sm">
                   You have been logged out successfully.
                 </div>
             )}
 
-            {/* 🔑 IMPORTANT: Standard HTML form submission */}
-            <form
-                method="post"
-                action="/admin/login"
-                className="space-y-6"
-            >
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label
-                    htmlFor="username"
-                    className="text-sm font-medium text-gray-700"
-                >
+                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                   Email Address
                 </Label>
                 <Input
-                    id="username"
-                    name="username"   // REQUIRED by Spring Security
+                    id="email"
+                    name="email"
                     type="email"
                     placeholder="admin@peakkineticspt.com"
                     required
-                    className="h-11"
                     autoComplete="username"
+                    className="h-11"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={submitting}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label
-                    htmlFor="password"
-                    className="text-sm font-medium text-gray-700"
-                >
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                   Password
                 </Label>
                 <Input
                     id="password"
-                    name="password"   // REQUIRED by Spring Security
+                    name="password"
                     type="password"
                     placeholder="••••••••"
                     required
-                    className="h-11"
                     autoComplete="current-password"
+                    className="h-11"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={submitting}
                 />
               </div>
 
               <Button
                   type="submit"
-                  className="w-full h-11 bg-sky-600 hover:bg-sky-700 text-white font-medium"
+                  disabled={submitting}
+                  className="w-full h-11 bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white font-medium"
               >
-                Sign In
+                {submitting ? "Signing in…" : "Sign In"}
               </Button>
             </form>
 
