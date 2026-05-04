@@ -95,20 +95,20 @@ management:
         enabled: ${GRAFANA_OTLP_ENABLED:false}
         url: ${GRAFANA_OTLP_ENDPOINT:http://localhost:4318}/v1/metrics
         headers:
-          Authorization: ${GRAFANA_OTLP_AUTH}
+          Authorization: ${GRAFANA_OTLP_AUTH:}
   opentelemetry:
     tracing:
       export:
         otlp:
           endpoint: ${GRAFANA_OTLP_ENDPOINT:http://localhost:4318}/v1/traces
           headers:
-            Authorization: ${GRAFANA_OTLP_AUTH}
+            Authorization: ${GRAFANA_OTLP_AUTH:}
     logging:
       export:
         otlp:
           endpoint: ${GRAFANA_OTLP_ENDPOINT:http://localhost:4318}/v1/logs
           headers:
-            Authorization: ${GRAFANA_OTLP_AUTH}
+            Authorization: ${GRAFANA_OTLP_AUTH:}
 
 storage:
   upload-dir: ${STORAGE_UPLOAD_DIR:/app/uploads}
@@ -126,10 +126,13 @@ cors:
 
 cloudflare:
   access:
-    team-domain: ${CLOUDFLARE_ACCESS_TEAM_DOMAIN}
-    audience: ${CLOUDFLARE_ACCESS_AUDIENCE}
+    # Blank default → CloudflareAccessFilter disables itself (admin routes
+    # protected by JWT only). Set both fly secrets to enable CF Access.
+    team-domain: ${CLOUDFLARE_ACCESS_TEAM_DOMAIN:}
+    audience: ${CLOUDFLARE_ACCESS_AUDIENCE:}
   turnstile:
-    secret-key: ${CLOUDFLARE_TURNSTILE_SECRET}
+    # Blank default → TurnstileService.verify() returns true (fail-open).
+    secret-key: ${CLOUDFLARE_TURNSTILE_SECRET:}
 
 logging:
   level:
