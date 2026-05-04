@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.1</version>
+		<version>4.0.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.peakkineticspt</groupId>
@@ -16,10 +16,6 @@
 
 	<properties>
 		<java.version>21</java.version>
-		<!-- Frontend build configuration -->
-		<frontend.directory>${project.basedir}/../frontend</frontend.directory>
-		<node.version>v22.12.0</node.version>
-		<pnpm.version>v9.15.0</pnpm.version>
 	</properties>
 
 	<dependencies>
@@ -36,7 +32,7 @@
 		<dependency>
 			<groupId>com.resend</groupId>
 			<artifactId>resend-java</artifactId>
-			<version>LATEST</version>
+			<version>4.13.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -58,10 +54,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-thymeleaf</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 		<dependency>
@@ -69,18 +61,19 @@
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.vonage</groupId>
-			<artifactId>client</artifactId>
-			<version>7.7.0</version>
+			<groupId>com.twilio.sdk</groupId>
+			<artifactId>twilio</artifactId>
+			<version>10.6.5</version>
 		</dependency>
 		<dependency>
-			<groupId>org.thymeleaf.extras</groupId>
-			<artifactId>thymeleaf-extras-springsecurity6</artifactId>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>2.32.4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<scope>runtime</scope>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
@@ -90,6 +83,28 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-database-postgresql</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>4.5.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>jwks-rsa</artifactId>
+			<version>0.22.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -192,78 +207,6 @@
 				</configuration>
 			</plugin>
 
-			<!-- Frontend Maven Plugin -->
-			<plugin>
-				<groupId>com.github.eirslett</groupId>
-				<artifactId>frontend-maven-plugin</artifactId>
-				<version>1.15.0</version>
-				<configuration>
-					<workingDirectory>${frontend.directory}</workingDirectory>
-					<installDirectory>${project.build.directory}</installDirectory>
-				</configuration>
-				<executions>
-					<!-- Install Node and pnpm -->
-					<execution>
-						<id>install node and pnpm</id>
-						<goals>
-							<goal>install-node-and-pnpm</goal>
-						</goals>
-						<configuration>
-							<nodeVersion>${node.version}</nodeVersion>
-							<pnpmVersion>${pnpm.version}</pnpmVersion>
-						</configuration>
-					</execution>
-
-					<!-- Install dependencies -->
-					<execution>
-						<id>pnpm install</id>
-						<goals>
-							<goal>pnpm</goal>
-						</goals>
-						<configuration>
-							<arguments>install --frozen-lockfile</arguments>
-						</configuration>
-					</execution>
-
-					<!-- Build frontend -->
-					<execution>
-						<id>pnpm build</id>
-						<goals>
-							<goal>pnpm</goal>
-						</goals>
-						<configuration>
-							<arguments>run build</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- Copy frontend build to Spring Boot static resources -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.3.1</version>
-				<executions>
-					<execution>
-						<id>copy-frontend-build</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>
-								${project.build.outputDirectory}/static
-							</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${frontend.directory}/out</directory>
-									<filtering>false</filtering>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 		<finalName>peak-backend</finalName>
 	</build>

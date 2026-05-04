@@ -3,6 +3,7 @@ package com.peakkineticspt.service.impl;
 import com.peakkineticspt.dto.ReviewDTOs;
 import com.peakkineticspt.entity.Review;
 import com.peakkineticspt.repository.ReviewRepository;
+import com.peakkineticspt.service.IGoogleBusinessProfileService;
 import java.util.List;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -35,7 +36,7 @@ class ReviewServiceImplTest {
     private Span span;
 
     @Mock
-    private GoogleBusinessProfileService googleBusinessProfileService;
+    private IGoogleBusinessProfileService googleBusinessProfileService;
 
     @InjectMocks
     private ReviewServiceImpl reviewService;

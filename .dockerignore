@@ -1,0 +1,15 @@
+.git
+.github
+node_modules
+frontend/node_modules
+frontend/.next
+frontend/out
+**/target
+**/build
+**/dist
+**/.DS_Store
+**/.env*
+**/logs
+MIGRATION_PLAN.md
+docs/
+README.md

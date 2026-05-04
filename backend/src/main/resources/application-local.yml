@@ -12,11 +12,58 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 1
+
+# Local CORS — allow Vite/Next dev servers
+cors:
+  allowed-origins: http://localhost:3000,http://127.0.0.1:3000
+  allowed-origin-patterns: http://localhost:*,http://127.0.0.1:*
+
+# Cloudflare Access disabled locally; DevAuthFilter takes over
+cloudflare:
+  access:
+    team-domain: ""
+    audience: ""
+  turnstile:
+    secret-key: ""
+
+dev:
+  auto-auth:
+    enabled: true
+    email: dev@localhost
+
+# Placeholder values so @Value injection succeeds without real keys.
+# Real send/SMS calls will fail at runtime — fine for UI testing.
+resend:
+  api-key: ${RESEND_API_KEY:re_local_placeholder}
+  from-address: ${RESEND_FROM_ADDRESS:dev@localhost}
+  reply-to: ${RESEND_REPLY_TO:dev@localhost}
+
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID:ACdevplaceholder}
+  auth-token: ${TWILIO_AUTH_TOKEN:devtoken}
+  phone-number: ${TWILIO_PHONE_NUMBER:+15555550100}
+
+google:
+  oauth:
+    client-id: ${GOOGLE_OAUTH_CLIENT_ID:dev}
+    client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET:dev}
+    refresh-token: ${GOOGLE_OAUTH_REFRESH_TOKEN:dev}
+  business:
+    account-ref: ${GOOGLE_BUSINESS_ACCOUNT:dev}
+    location-ref: ${GOOGLE_BUSINESS_LOCATION:dev}
+
+jwt:
+  secret: ${JWT_SECRET:local-dev-secret-not-for-production-use-only-32chars-min-required-here}
 
 management:
   tracing:
@@ -25,7 +72,6 @@ management:
 
 logging:
   level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     root: info
-    org.springframework.security: debug
+    org.hibernate.SQL: WARN
+    com.peakkineticspt: DEBUG

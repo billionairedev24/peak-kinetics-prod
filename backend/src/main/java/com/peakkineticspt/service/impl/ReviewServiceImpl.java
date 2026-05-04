@@ -4,9 +4,9 @@ import com.peakkineticspt.dto.ReviewDTOs;
 import com.peakkineticspt.entity.Review;
 import com.peakkineticspt.repository.ReviewRepository;
 import com.peakkineticspt.service.IEmailNotificationService;
+import com.peakkineticspt.service.IGoogleBusinessProfileService;
 import com.peakkineticspt.service.IReviewService;
 import com.peakkineticspt.service.ISmsNotificationService;
-import com.resend.core.exception.ResendException;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,7 +40,7 @@ public class ReviewServiceImpl implements IReviewService {
     private final ReviewRepository reviewRepository;
     private final IEmailNotificationService emailService;
     private final ISmsNotificationService smsService;
-    private final GoogleBusinessProfileService googleBusinessProfileService;
+    private final IGoogleBusinessProfileService googleBusinessProfileService;
     private final Tracer tracer;
 
     @Override
@@ -121,8 +121,7 @@ public class ReviewServiceImpl implements IReviewService {
     }
 
     @Override
-    public void sendReviewRequest(ReviewDTOs.SendReviewRequestDTO request, HttpServletRequest httpServletRequest)
-            throws ResendException {
+    public void sendReviewRequest(ReviewDTOs.SendReviewRequestDTO request, HttpServletRequest httpServletRequest) {
         Span span = tracer.spanBuilder("review.sendRequest").startSpan();
         try {
             if (request.getEmail() != null && !request.getEmail().isBlank()) {
@@ -140,8 +139,7 @@ public class ReviewServiceImpl implements IReviewService {
     }
 
     @Override
-    public void sendReferralRequest(ReviewDTOs.SendReferralRequestDTO request, HttpServletRequest httpServletRequest)
-            throws ResendException {
+    public void sendReferralRequest(ReviewDTOs.SendReferralRequestDTO request, HttpServletRequest httpServletRequest) {
         Span span = tracer.spanBuilder("review.sendReferralRequest").startSpan();
         try {
             if (request.getEmail() != null && !request.getEmail().isBlank()) {

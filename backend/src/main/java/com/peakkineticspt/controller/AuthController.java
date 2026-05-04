@@ -2,7 +2,6 @@ package com.peakkineticspt.controller;
 
 import com.peakkineticspt.dto.AuthDTOs;
 import com.peakkineticspt.service.IAuthService;
-import com.resend.core.exception.ResendException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,14 +26,13 @@ public class AuthController {
     private final IAuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody AuthDTOs.RegisterRequest request) throws ResendException {
+    public ResponseEntity<?> register(@Valid @RequestBody AuthDTOs.RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, Object>> forgotPassword(
-            @Valid @RequestBody AuthDTOs.ForgotPasswordRequest request, HttpServletRequest httpServletRequest)
-            throws ResendException {
+            @Valid @RequestBody AuthDTOs.ForgotPasswordRequest request, HttpServletRequest httpServletRequest) {
         authService.forgotPassword(request, httpServletRequest);
         return ResponseEntity.ok(Map.of(
                 "success", true,
@@ -42,8 +40,7 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<Map<String, Object>> resetPassword(@Valid @RequestBody AuthDTOs.ResetPasswordRequest request)
-            throws ResendException {
+    public ResponseEntity<Map<String, Object>> resetPassword(@Valid @RequestBody AuthDTOs.ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ResponseEntity.ok(Map.of(
                 "success", true,

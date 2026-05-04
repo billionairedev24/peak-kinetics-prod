@@ -57,28 +57,22 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [greeting, setGreeting] = useState(getGreeting())
 
-  // ✅ Auth bootstrap (async-safe)
+  // Auth bootstrap: only let the dashboard mount after we have a real user.
   useEffect(() => {
     let mounted = true
 
     async function initAuth() {
-      try {
-        const authenticated = adminAuth.isAuthenticated()
+      const userData = await adminAuth.getUser()
+      if (!mounted) return
 
-        if (!authenticated) {
-          router.replace("/admin/login")
-          return
-        }
-
-        const userData = await adminAuth.getUser()
-
-        if (mounted) {
-          setUser(userData)
-          setLoading(false)
-        }
-      } catch {
+      if (!userData) {
+        // Either unauthenticated, or backend unreachable. Either way: bounce.
         router.replace("/admin/login")
+        return
       }
+
+      setUser(userData)
+      setLoading(false)
     }
 
     initAuth()
@@ -94,6 +88,27 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     }, 60000)
     return () => clearInterval(interval)
   }, [])
+
+  // Close mobile sidebar on Escape
+  useEffect(() => {
+    if (!sidebarOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSidebarOpen(false)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [sidebarOpen])
+
+  // Lock body scroll when sidebar is open on mobile
+  useEffect(() => {
+    if (sidebarOpen) {
+      const original = document.body.style.overflow
+      document.body.style.overflow = "hidden"
+      return () => {
+        document.body.style.overflow = original
+      }
+    }
+  }, [sidebarOpen])
 
   const navItems = [
     { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -117,11 +132,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
         />
       )}
 
       {/* Sidebar */}
       <aside
+        id="admin-sidebar"
+        role="navigation"
+        aria-label="Admin navigation"
+        aria-hidden={!sidebarOpen ? undefined : false}
         className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
           } lg:translate-x-0`}
       >
@@ -176,17 +196,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               </p>
             )}
 
-            {/* ✅ Spring Security logout */}
-            <form method="post" action="/logout">
+            {/* Cloudflare Access logout — clears the CF session cookie */}
+            <a href="/cdn-cgi/access/logout" className="block">
               <Button
-                type="submit"
+                type="button"
                 variant="ghost"
                 className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
-            </form>
+            </a>
           </div>
         </div>
       </aside>
@@ -198,8 +218,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden"
+              className="lg:hidden h-11 w-11"
               onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-expanded={sidebarOpen}
+              aria-controls="admin-sidebar"
+              aria-label={sidebarOpen ? "Close menu" : "Open menu"}
             >
               {sidebarOpen ? (
                 <X className="h-6 w-6" />

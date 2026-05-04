@@ -86,6 +86,12 @@ export const adminAuth = {
     }
   },
 
+  /**
+   * Returns the signed-in user, or null if:
+   *  - no session / JWT present (backend returns 401)
+   *  - backend is unreachable (network error)
+   *  - response is malformed
+   */
   getUser: async (): Promise<AdminUser | null> => {
     try {
       const response = await fetch(API_ENDPOINTS.auth.user, {
@@ -94,15 +100,21 @@ export const adminAuth = {
 
       if (!response.ok) return null
 
-      return await response.json()
+      const data = await response.json()
+      if (!data || !data.email) return null
+      return data as AdminUser
     } catch (error) {
       console.error("Get user error:", error)
       return null
     }
   },
 
-  isAuthenticated:  () => {
-    const user =  adminAuth.getUser()
-    return !!user
+  /**
+   * Truly async auth check — hits the backend and only resolves true when
+   * a valid user object comes back. Callers must await this.
+   */
+  isAuthenticated: async (): Promise<boolean> => {
+    const user = await adminAuth.getUser()
+    return user !== null
   },
 }

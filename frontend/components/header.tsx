@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { SchedulingIframeModal } from "./scheduling-iframe-modal"
 import { useScheduling } from "./scheduling-context"
+import { ModeToggle } from "./mode-toggle"
 import Link from "next/link"
 
 export function Header() {
@@ -53,7 +54,7 @@ export function Header() {
         )}
       >
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex items-center justify-between h-20 overflow-visible">
+          <nav className="grid grid-cols-[auto_1fr_auto] items-center gap-4 h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-4 group">
               <div className="w-11 h-11 bg-[#2b59e1] rounded-xl flex items-center justify-center shadow-[0_4px_12px_rgba(43,89,225,0.25)] group-hover:scale-105 transition-transform duration-300">
@@ -65,8 +66,8 @@ export function Header() {
               </div>
             </Link>
 
-            {/* Desktop Nav - Centered */}
-            <div className="hidden lg:flex items-center gap-10 absolute left-1/2 -translate-x-1/2">
+            {/* Desktop Nav - Centered in the grid's middle column */}
+            <div className="hidden lg:flex items-center gap-8 justify-center min-w-0">
               {navItems.filter(item => ["Home", "Services", "About", "Blog", "Contact"].includes(item.label)).map((item) => (
                 <div key={item.label} className="relative group">
                   {item.hasDropdown ? (
@@ -124,41 +125,53 @@ export function Header() {
             </div>
 
             {/* Right Actions */}
-            <div className="flex items-center gap-5">
-              <div className="hidden xl:flex items-center gap-3.5 mr-2">
-                <div className="w-10 h-10 rounded-full bg-[#2b59e1]/5 flex items-center justify-center">
-                  <Phone className="w-4.5 h-4.5 text-[#2b59e1]" />
+            <div className="flex items-center justify-end gap-2 md:gap-3">
+              {/* Phone — only on very wide screens */}
+              <a
+                href="tel:737-368-2653"
+                className="hidden 2xl:flex items-center gap-2.5 mr-1 group"
+              >
+                <div className="w-9 h-9 rounded-full bg-[#2b59e1]/5 flex items-center justify-center">
+                  <Phone className="w-4 h-4 text-[#2b59e1]" />
                 </div>
-                <div className="flex flex-col">
-                  <a href="tel:737-368-2653" className="text-[15px] font-bold text-[#1a1a1a] hover:text-[#2b59e1] transition-colors leading-none mb-1">
+                <div className="flex flex-col leading-none">
+                  <span className="text-[14px] font-bold text-[#1a1a1a] group-hover:text-[#2b59e1] transition-colors">
                     737-368-2653
-                  </a>
-                  <p className="text-[10px] font-semibold text-[#888] tracking-wider uppercase leading-none">24/7</p>
+                  </span>
+                  <span className="text-[10px] font-semibold text-[#888] tracking-wider uppercase mt-0.5">
+                    24/7
+                  </span>
                 </div>
-              </div>
+              </a>
 
-              <div className="flex items-center gap-3">
-                <Link href="/admin" className="hidden md:flex items-center gap-2 text-[13px] font-bold text-[#2b59e1] hover:bg-[#2b59e1]/5 px-4 py-2.5 rounded-xl border border-[#2b59e1]/20 transition-all">
-                  <Shield className="w-4 h-4" />
-                  Admin
-                </Link>
+              <ModeToggle />
 
-                <Button
-                  onClick={() => openScheduling()}
-                  className="rounded-xl px-6 py-3 h-12 text-[14px] font-bold bg-[#2b59e1] hover:bg-[#1e48c7] text-white shadow-[0_8px_20px_rgba(43,89,225,0.2)] transition-all flex items-center gap-2.5"
-                >
-                  <Calendar className="w-4.5 h-4.5" />
-                  Schedule Appointment
-                </Button>
+              <Link
+                href="/admin"
+                className="hidden md:flex items-center gap-2 text-[13px] font-bold text-[#2b59e1] hover:bg-[#2b59e1]/5 px-3 py-2 rounded-xl border border-[#2b59e1]/20 transition-all"
+              >
+                <Shield className="w-4 h-4" />
+                <span className="hidden xl:inline">Admin</span>
+              </Link>
 
-                {/* Mobile Menu Toggle */}
-                <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="lg:hidden w-11 h-11 flex items-center justify-center rounded-xl bg-[#f5f5f5] text-[#1a1a1a] hover:bg-[#2b59e1]/10 hover:text-[#2b59e1] transition-all"
-                >
-                  {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                </button>
-              </div>
+              <Button
+                onClick={() => openScheduling()}
+                className="rounded-xl px-3 sm:px-5 h-11 text-[13px] sm:text-[14px] font-bold bg-[#2b59e1] hover:bg-[#1e48c7] text-white shadow-[0_4px_12px_rgba(43,89,225,0.18)] transition-all flex items-center gap-2 whitespace-nowrap"
+              >
+                <Calendar className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Schedule</span>
+                <span className="hidden xl:inline">Appointment</span>
+              </Button>
+
+              {/* Mobile menu toggle */}
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="lg:hidden w-11 h-11 flex items-center justify-center rounded-xl bg-[#f5f5f5] text-[#1a1a1a] hover:bg-[#2b59e1]/10 hover:text-[#2b59e1] transition-all shrink-0"
+                aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={isMenuOpen}
+              >
+                {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
             </div>
           </nav>
         </div>

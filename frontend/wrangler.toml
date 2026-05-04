@@ -1,0 +1,16 @@
+# Cloudflare Pages config for the Next.js frontend.
+# This file is read by `wrangler pages deploy` and by next-on-pages.
+# Project name shown in the Cloudflare dashboard.
+name = "peak-kinetics-frontend"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+pages_build_output_dir = ".vercel/output/static"
+
+# Environment variables for production builds.
+# NEXT_PUBLIC_* values must be set at build time, not at runtime — define them
+# either here, in the Cloudflare dashboard (Settings → Environment Variables),
+# or via `wrangler pages deploy --var KEY=VAL`.
+[vars]
+NEXT_PUBLIC_API_URL = "https://api.peakkineticspt.com"
+# NEXT_PUBLIC_TURNSTILE_SITE_KEY is set in dashboard (per-environment).

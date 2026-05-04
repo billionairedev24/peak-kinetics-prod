@@ -11,43 +11,55 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: validate
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 1
+    locations: classpath:db/migration
+    validate-on-migrate: true
   servlet:
     multipart:
       max-file-size: 128MB
       max-request-size: 130MB
 
-uploadthing:
-  token: ${UPLOADTHING_TOKEN}
-
 google:
   oauth:
-    client-id: ${GOOGLE_OAUTH_CLIENT_ID}
-    client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET}
-    refresh-token: ${GOOGLE_OAUTH_REFRESH_TOKEN}
+    client-id: ${GOOGLE_OAUTH_CLIENT_ID:disabled}
+    client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET:disabled}
+    refresh-token: ${GOOGLE_OAUTH_REFRESH_TOKEN:disabled}
   business:
-    account-ref: ${GOOGLE_BUSINESS_ACCOUNT}
-    location-ref: ${GOOGLE_BUSINESS_LOCATION}
-  places:
-    api-key: ${GOOGLE_PLACES_API_KEY}
-    place-id: ${GOOGLE_PLACES_PLACE_ID}
+    enabled: ${GOOGLE_BUSINESS_ENABLED:false}
+    account-ref: ${GOOGLE_BUSINESS_ACCOUNT:accounts/disabled}
+    location-ref: ${GOOGLE_BUSINESS_LOCATION:locations/disabled}
 
 resend:
-  api:
-    key: ${RESEND_API_KEY}
+  api-key: ${RESEND_API_KEY}
+  from-address: ${RESEND_FROM_ADDRESS:PEAK KINETICS PT <noReply@peakkineticspt.net>}
+  reply-to: ${RESEND_REPLY_TO:info@peakkineticspt.com}
 
-vonage:
-  api-key: ${VONAGE_API_KEY}
-  api-secret: ${VONAGE_API_SECRET}
-  from-number: ${VONAGE_FROM_NUMBER}
+twilio:
+  enabled: ${TWILIO_ENABLED:false}
+  account-sid: ${TWILIO_ACCOUNT_SID:disabled}
+  auth-token: ${TWILIO_AUTH_TOKEN:disabled}
+  phone-number: ${TWILIO_PHONE_NUMBER:+10000000000}
 
 server:
   forward-headers-strategy: framework
-  shutdown: immediate
+  shutdown: graceful
+  servlet:
+    session:
+      timeout: 15m
+      cookie:
+        http-only: true
+        secure: true
+        same-site: strict
+
+spring.lifecycle.timeout-per-shutdown-phase: 30s
 
 jwt:
   secret: ${JWT_SECRET}
@@ -57,10 +69,36 @@ management:
   tracing:
     sampling:
       probability: 0.1
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
 
 storage:
-  upload-dir: uploads
+  upload-dir: ${STORAGE_UPLOAD_DIR:uploads}
+
+r2:
+  endpoint: ${R2_ENDPOINT:}
+  access-key-id: ${R2_ACCESS_KEY_ID:}
+  secret-access-key: ${R2_SECRET_ACCESS_KEY:}
+  bucket: ${R2_BUCKET:}
+  public-base-url: ${R2_PUBLIC_BASE_URL:}
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:https://peakkineticspt.com,https://www.peakkineticspt.com}
+  allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:https://*.peakkineticspt.com,https://*.pages.dev}
+
+cloudflare:
+  access:
+    team-domain: ${CLOUDFLARE_ACCESS_TEAM_DOMAIN:}
+    audience: ${CLOUDFLARE_ACCESS_AUDIENCE:}
+  turnstile:
+    secret-key: ${CLOUDFLARE_TURNSTILE_SECRET:}
 
 logging:
   level:
     root: INFO
+    com.peakkineticspt: INFO

@@ -10,8 +10,10 @@ import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.UserCredentials;
 import com.peakkineticspt.entity.Review;
 import com.peakkineticspt.entity.ReviewSource;
+import com.peakkineticspt.service.IGoogleBusinessProfileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -21,8 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@ConditionalOnProperty(name = "google.business.enabled", havingValue = "true")
 @Slf4j
-public class GoogleBusinessProfileService {
+public class GoogleBusinessProfileService implements IGoogleBusinessProfileService {
 
     @Value("${google.oauth.client-id}")
     private String clientId;
@@ -41,17 +44,8 @@ public class GoogleBusinessProfileService {
 
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 
-    /**
-     * Fetches reviews from the Google Business Profile API.
-     * 
-     * @return List of Review entities mapped from Google data.
-     */
+    @Override
     public List<Review> fetchBusinessReviews() {
-        if ("mock-token".equals(refreshToken) || refreshToken == null || refreshToken.isBlank()) {
-            log.warn("Google OAuth refresh token is not configured. Skipping business review sync.");
-            return new ArrayList<>();
-        }
-
         try {
             HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 

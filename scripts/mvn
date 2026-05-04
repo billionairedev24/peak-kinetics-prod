@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Thin wrapper around backend/mvnw that pins JDK 21.
+# Use from anywhere: ./scripts/mvn test
+set -eo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+if [[ "$(uname)" == "Darwin" ]] && command -v /usr/libexec/java_home >/dev/null 2>&1; then
+  if JAVA_HOME_21="$(/usr/libexec/java_home -v 21 2>/dev/null)"; then
+    export JAVA_HOME="$JAVA_HOME_21"
+    export PATH="$JAVA_HOME/bin:$PATH"
+  else
+    echo "scripts/mvn: JDK 21 not installed." >&2
+    echo "  Install: brew install --cask temurin@21" >&2
+    echo "  Verify: /usr/libexec/java_home -V" >&2
+    exit 1
+  fi
+fi
+
+cd "$REPO_ROOT/backend"
+exec ./mvnw "$@"

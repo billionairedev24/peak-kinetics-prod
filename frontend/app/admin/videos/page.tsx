@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Skeleton } from "@/components/ui/skeleton"
 import { NativeUpload } from "@/components/admin/native-upload"
 import { Trash2, Video as VideoIcon, Plus, ExternalLink, Loader2, Play } from "lucide-react"
 import { toast } from "sonner"
@@ -209,9 +210,16 @@ export default function AdminVideosPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {isLoading ? (
-                    <div className="col-span-full flex justify-center py-20">
-                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                    </div>
+                    Array.from({ length: 6 }).map((_, i) => (
+                        <Card key={i} className="overflow-hidden">
+                            <Skeleton className="aspect-video w-full" />
+                            <div className="p-4 space-y-3">
+                                <Skeleton className="h-5 w-3/4" />
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-2/3" />
+                            </div>
+                        </Card>
+                    ))
                 ) : videos.length === 0 ? (
                     <div className="col-span-full text-center py-20 border rounded-2xl bg-muted/30">
                         <VideoIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />

@@ -1,12 +1,13 @@
 package com.peakkineticspt.controller;
 
 import com.peakkineticspt.dto.ReviewDTOs;
+import com.peakkineticspt.security.TurnstileService;
 import com.peakkineticspt.service.IReviewService;
-import com.resend.core.exception.ResendException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +21,7 @@ import java.util.Map;
 public class ReviewController {
 
     private final IReviewService reviewService;
+    private final TurnstileService turnstile;
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllReviews(
@@ -36,7 +38,14 @@ public class ReviewController {
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> createReview(
-            @Valid @RequestBody ReviewDTOs.CreateReviewRequest request) {
+            @Valid @RequestBody ReviewDTOs.CreateReviewRequest request,
+            @RequestHeader(value = "Cf-Turnstile-Response", required = false) String turnstileToken,
+            HttpServletRequest httpRequest) {
+        if (!turnstile.verify(turnstileToken, httpRequest.getRemoteAddr())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "success", false,
+                    "message", "Bot verification failed. Please refresh and try again."));
+        }
         ReviewDTOs.ReviewResponse response = reviewService.createReview(request);
         return ResponseEntity.ok(Map.of(
                 "success", true,
@@ -61,8 +70,7 @@ public class ReviewController {
 
     @PostMapping("/admin/send-request")
     public ResponseEntity<Map<String, Object>> sendReviewRequest(
-            @Valid @RequestBody ReviewDTOs.SendReviewRequestDTO request, HttpServletRequest httpServletRequest)
-            throws ResendException {
+            @Valid @RequestBody ReviewDTOs.SendReviewRequestDTO request, HttpServletRequest httpServletRequest) {
         reviewService.sendReviewRequest(request, httpServletRequest);
 
         List<String> sentVia = new java.util.ArrayList<>();
@@ -82,8 +90,7 @@ public class ReviewController {
 
     @PostMapping("/admin/send-referral")
     public ResponseEntity<Map<String, Object>> sendReferralRequest(
-            @Valid @RequestBody ReviewDTOs.SendReferralRequestDTO request, HttpServletRequest httpServletRequest)
-            throws ResendException {
+            @Valid @RequestBody ReviewDTOs.SendReferralRequestDTO request, HttpServletRequest httpServletRequest) {
         reviewService.sendReferralRequest(request, httpServletRequest);
 
         List<String> sentVia = new java.util.ArrayList<>();

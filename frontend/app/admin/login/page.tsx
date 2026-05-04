@@ -68,7 +68,7 @@ export default function AdminLoginPage() {
                     id="username"
                     name="username"   // REQUIRED by Spring Security
                     type="email"
-                    placeholder="admin@peakkinetics.com"
+                    placeholder="admin@peakkineticspt.com"
                     required
                     className="h-11"
                     autoComplete="username"

@@ -1,7 +1,6 @@
 package com.peakkineticspt.service;
 
 import com.peakkineticspt.dto.ReviewDTOs;
-import com.resend.core.exception.ResendException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,11 +14,9 @@ public interface IReviewService {
 
     void deleteReview(long id);
 
-    void sendReviewRequest(ReviewDTOs.SendReviewRequestDTO request, HttpServletRequest httpServletRequest)
-            throws ResendException;
+    void sendReviewRequest(ReviewDTOs.SendReviewRequestDTO request, HttpServletRequest httpServletRequest);
 
-    void sendReferralRequest(ReviewDTOs.SendReferralRequestDTO request, HttpServletRequest httpServletRequest)
-            throws ResendException;
+    void sendReferralRequest(ReviewDTOs.SendReferralRequestDTO request, HttpServletRequest httpServletRequest);
 
     ReviewDTOs.ImportResult importReviewsFromExcel(MultipartFile file);
 

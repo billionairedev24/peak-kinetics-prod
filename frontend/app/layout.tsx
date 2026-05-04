@@ -3,6 +3,8 @@ import type { Metadata } from "next"
 import { Playfair_Display, Source_Sans_3 } from "next/font/google"
 import { Suspense } from "react"
 import { SchedulingProvider } from "@/components/scheduling-context"
+import { ThemeProvider } from "@/components/theme-provider"
+import { WebAnalytics } from "@/components/web-analytics"
 import "./globals.css"
 
 const playfair = Playfair_Display({
@@ -23,7 +25,7 @@ export const metadata: Metadata = {
     "Award-winning physical therapy clinic in Austin, TX specializing in sports medicine, injury recovery, movement science, and biomechanics. Personalized rehabilitation with insurance and cash pay options. Expert therapists serving Austin and surrounding areas.",
   keywords:
     "physical therapy Austin TX, sports medicine, injury recovery, movement science, rehabilitation, physical therapist, orthopedic therapy, biomechanics, pain management, performance training, athlete recovery, physical therapy near me, PT Austin, therapy services Texas",
-  authors: [{ name: "Peak Kinetics", url: "https://peakkinetics.com" }],
+  authors: [{ name: "Peak Kinetics", url: "https://peakkineticspt.com" }],
   creator: "Peak Kinetics",
   publisher: "Peak Kinetics",
   formatDetection: {
@@ -44,25 +46,25 @@ export const metadata: Metadata = {
     google: "your-google-verification-code",
   },
   alternates: {
-    canonical: "https://peakkinetics.com",
+    canonical: "https://peakkineticspt.com",
   },
   openGraph: {
     title: "Peak Kinetics - Leading Physical Therapy & Movement Science in Austin",
     description:
       "Transform your recovery with evidence-based physical therapy and cutting-edge movement science. Expert rehabilitation services in Austin, TX.",
-    url: "https://peakkinetics.com",
+    url: "https://peakkineticspt.com",
     type: "website",
     locale: "en_US",
     siteName: "Peak Kinetics",
     images: [
       {
-        url: "https://peakkinetics.com/og-image-1200x630.jpg",
+        url: "https://peakkineticspt.com/og-image-1200x630.jpg",
         width: 1200,
         height: 630,
         alt: "Peak Kinetics Physical Therapy Austin",
       },
       {
-        url: "https://peakkinetics.com/og-image-800x600.jpg",
+        url: "https://peakkineticspt.com/og-image-800x600.jpg",
         width: 800,
         height: 600,
         alt: "Peak Kinetics Therapy Services",
@@ -76,7 +78,7 @@ export const metadata: Metadata = {
     title: "Peak Kinetics - Physical Therapy & Movement Science in Austin, TX",
     description:
       "Expert physical therapy and rehabilitation services with personalized treatment plans. Insurance and cash pay options available.",
-    images: ["https://peakkinetics.com/twitter-image.jpg"],
+    images: ["https://peakkineticspt.com/twitter-image.jpg"],
   },
     generator: 'v0.app'
 }
@@ -87,7 +89,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -103,21 +105,21 @@ export default function RootLayout({
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": ["LocalBusiness", "HealthAndBeautyBusiness", "MedicalBusiness"],
-            "@id": "https://peakkinetics.com",
+            "@id": "https://peakkineticspt.com",
             name: "Peak Kinetics",
             alternateName: ["Peak Kinetics Physical Therapy", "Peak Kinetics Rehabilitation"],
-            image: "https://peakkinetics.com/logo.png",
+            image: "https://peakkineticspt.com/logo.png",
             logo: {
               "@type": "ImageObject",
-              url: "https://peakkinetics.com/logo.png",
+              url: "https://peakkineticspt.com/logo.png",
               width: 250,
               height: 60,
             },
             description:
               "Leading physical therapy and movement science clinic in Austin, TX specializing in sports medicine, injury recovery, and rehabilitation.",
-            url: "https://peakkinetics.com",
+            url: "https://peakkineticspt.com",
             telephone: "+1-737-368-2653",
-            email: "contact@peakkinetics.com",
+            email: "contact@peakkineticspt.com",
             address: {
               "@type": "PostalAddress",
               streetAddress: "Your Address Here",
@@ -265,34 +267,37 @@ export default function RootLayout({
                 "@type": "ListItem",
                 position: 1,
                 name: "Home",
-                item: "https://peakkinetics.com",
+                item: "https://peakkineticspt.com",
               },
               {
                 "@type": "ListItem",
                 position: 2,
                 name: "Services",
-                item: "https://peakkinetics.com/#services",
+                item: "https://peakkineticspt.com/#services",
               },
               {
                 "@type": "ListItem",
                 position: 3,
                 name: "About",
-                item: "https://peakkinetics.com/#about",
+                item: "https://peakkineticspt.com/#about",
               },
               {
                 "@type": "ListItem",
                 position: 4,
                 name: "Contact",
-                item: "https://peakkinetics.com/#contact",
+                item: "https://peakkineticspt.com/#contact",
               },
             ],
           })}
         </script>
       </head>
       <body className={`${playfair.variable} ${sourceSans.variable} font-sans antialiased`}>
-        <SchedulingProvider>
-          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
-        </SchedulingProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <SchedulingProvider>
+            <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+          </SchedulingProvider>
+        </ThemeProvider>
+        <WebAnalytics />
       </body>
     </html>
   )

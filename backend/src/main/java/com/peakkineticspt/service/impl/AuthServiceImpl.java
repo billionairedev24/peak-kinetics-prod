@@ -7,7 +7,6 @@ import com.peakkineticspt.repository.PasswordResetTokenRepository;
 import com.peakkineticspt.repository.UserRepository;
 import com.peakkineticspt.service.IAuthService;
 import com.peakkineticspt.service.IEmailNotificationService;
-import com.resend.core.exception.ResendException;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,7 +33,7 @@ public class AuthServiceImpl implements IAuthService {
 
     @Override
     @Transactional
-    public AuthDTOs.RegisterResponse register(AuthDTOs.RegisterRequest request) throws ResendException {
+    public AuthDTOs.RegisterResponse register(AuthDTOs.RegisterRequest request) {
         Span span = tracer.spanBuilder("auth.register").startSpan();
         try {
             if (userRepository.existsByEmail(request.getEmail())) {
@@ -83,11 +82,7 @@ public class AuthServiceImpl implements IAuthService {
                         .build();
 
                 tokenRepository.save(resetToken);
-                try {
-                    emailService.sendPasswordResetEmail(admin.getEmail(), token, httpServletRequest);
-                } catch (ResendException e) {
-                    throw new RuntimeException(e);
-                }
+                emailService.sendPasswordResetEmail(admin.getEmail(), token, httpServletRequest);
             });
 
             span.setAttribute("email", request.getEmail());
@@ -98,7 +93,7 @@ public class AuthServiceImpl implements IAuthService {
 
     @Override
     @Transactional
-    public void resetPassword(AuthDTOs.ResetPasswordRequest request) throws ResendException {
+    public void resetPassword(AuthDTOs.ResetPasswordRequest request) {
         Span span = tracer.spanBuilder("auth.resetPassword").startSpan();
         try {
             PasswordResetToken resetToken = tokenRepository.findByToken(request.getToken())

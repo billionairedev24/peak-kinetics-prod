@@ -4,7 +4,7 @@ spring:
       on-profile: test
 
   datasource:
-    url: jdbc:h2:mem:peakkinetics;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:peakkinetics;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -12,14 +12,43 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: create-drop
+    show-sql: false
+
+  flyway:
+    enabled: false
 
   h2:
     console:
       enabled: true
       path: /h2-console
 
+resend:
+  api-key: test-resend-key
+  from-address: test@example.com
+  reply-to: reply@example.com
+
+twilio:
+  enabled: false
+  account-sid: ACtestxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  auth-token: test-token
+  phone-number: "+15555550100"
+
+google:
+  oauth:
+    client-id: test
+    client-secret: test
+    refresh-token: test
+  business:
+    enabled: false
+    account-ref: test
+    location-ref: test
+
+jwt:
+  secret: test-jwt-secret-must-be-long-enough-for-hmac-signing-32chars-min
+  expiration: 86400000
+
 logging:
   level:
-    root: DEBUG
+    root: INFO
+    com.peakkineticspt: INFO

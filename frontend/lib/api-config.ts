@@ -1,4 +1,8 @@
-export const API_BASE_URL = "/api"
+// Backend base URL.
+// In production this is set to https://api.peakkineticspt.com via Pages env.
+// In dev, leave NEXT_PUBLIC_API_URL unset to use a relative /api path
+// (works when frontend is served from the same origin as the backend).
+export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "") + "/api"
 
 export const API_ENDPOINTS = {
   reviews: {

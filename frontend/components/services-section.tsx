@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Activity, Heart, Zap, Target, Users, Clock, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { BodyMap } from "./BodyMap"
+import dynamic from "next/dynamic"
+
+// BodyMap pulls Framer Motion + 17 lucide icons; ship it on demand only.
+const BodyMap = dynamic(() => import("./BodyMap").then((m) => m.BodyMap), {
+    loading: () => (
+        <div className="aspect-[1/2] max-w-[360px] mx-auto rounded-3xl bg-muted/40 animate-pulse" />
+    ),
+})
 
 export function ServicesSection() {
   const services = [

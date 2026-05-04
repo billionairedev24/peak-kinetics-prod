@@ -1,194 +1,90 @@
 package com.peakkineticspt.config;
 
+import com.peakkineticspt.security.CloudflareAccessFilter;
+import com.peakkineticspt.security.DevAuthFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-        private final UserDetailsService userDetailsService;
+    private final CloudflareAccessFilter cloudflareAccessFilter;
+    private final ObjectProvider<DevAuthFilter> devAuthFilter;
 
-        @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
 
-                http
-                                // ----------------------------
-                                // BASICS
-                                // ----------------------------
-                                .csrf(AbstractHttpConfigurer::disable)
-                                .cors(Customizer.withDefaults())
+                .authorizeHttpRequests(auth -> auth
+                        // Public site / static
+                        .requestMatchers(
+                                "/",
+                                "/blog/**",
+                                "/reviews",
+                                "/messages",
+                                "/uploads/**",
+                                "/images/**",
+                                "/*.ico", "/*.png", "/*.svg", "/*.jpg", "/*.jpeg", "/*.webp", "/*.json", "/*.txt"
+                        ).permitAll()
 
-                                // ----------------------------
-                                // AUTHORIZATION
-                                // ----------------------------
-                                .authorizeHttpRequests(auth -> auth
+                        // Public APIs
+                        .requestMatchers(HttpMethod.GET, "/api/reviews", "/api/reviews/**",
+                                "/api/blog/**", "/api/videos", "/api/videos/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/reviews").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/messages").permitAll()
 
-                                                // -------- Next.js internals (CRITICAL) --------
-                                                .requestMatchers(
-                                                                "/_next/**",
-                                                                "/**/__next._tree.txt",
-                                                                "/**/__next._rsc**")
-                                                .permitAll()
+                        // Actuator (health check)
+                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
 
-                                                // -------- Static assets --------
-                                                .requestMatchers(
-                                                                "/images/**",
-                                                                "/uploads/**",
-                                                                "/*.ico",
-                                                                "/*.png",
-                                                                "/*.svg",
-                                                                "/*.jpg",
-                                                                "/*.jpeg",
-                                                                "/*.webp",
-                                                                "/*.json",
-                                                                "/*.txt")
-                                                .permitAll()
+                        // Admin and admin APIs require Cloudflare Access JWT (filter handles 401)
+                        .requestMatchers("/admin/**", "/api/admin/**", "/api/upload/**").authenticated()
+                        .requestMatchers("/api/reviews/admin/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/reviews/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/reviews/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/reviews/**").authenticated()
 
-                                                // -------- Public admin UI pages --------
-                                                .requestMatchers(
-                                                                "/admin/login",
-                                                                "/admin/login/**",
-                                                                "/admin/register",
-                                                                "/admin/register/**",
-                                                                "/admin/forgot-password",
-                                                                "/admin/forgot-password/**",
-                                                                "/admin/reset-password",
-                                                                "/admin/reset-password/**")
-                                                .permitAll()
+                        // Default: anything else not matched is permitted (marketing routes)
+                        .anyRequest().permitAll())
 
-                                                // -------- Public auth APIs --------
-                                                .requestMatchers(
-                                                                "/auth/login",
-                                                                "/api/admin/auth/register",
-                                                                "/api/admin/auth/forgot-password",
-                                                                "/api/admin/auth/reset-password")
-                                                .permitAll()
+                .addFilterBefore(cloudflareAccessFilter, UsernamePasswordAuthenticationFilter.class)
 
-                                                // -------- Public site pages --------
-                                                .requestMatchers(
-                                                                "/",
-                                                                "/blog/**",
-                                                                "/reviews",
-                                                                "/messages")
-                                                .permitAll()
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
 
-                                                // -------- Actuator (lock down in prod) --------
-                                                .requestMatchers("/actuator/**").permitAll()
-
-                                                // -------- Reviews API (GET public, write protected) --------
-                                                .requestMatchers(HttpMethod.GET, "/api/reviews", "/api/reviews/**")
-                                                .permitAll()
-                                                .requestMatchers(HttpMethod.POST, "/api/reviews").permitAll()
-                                                .requestMatchers("/api/reviews/admin/**").authenticated()
-                                                .requestMatchers(HttpMethod.POST, "/api/reviews/**").authenticated()
-                                                .requestMatchers(HttpMethod.PUT, "/api/reviews/**").authenticated()
-                                                .requestMatchers(HttpMethod.DELETE, "/api/reviews/**").authenticated()
-                                                .requestMatchers(HttpMethod.POST, "/api/messages").permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/blog/**", "/api/videos",
-                                                                "/api/videos/**")
-                                                .permitAll()
-
-                                                // -------- Protected areas --------
-                                                .requestMatchers("/logout").authenticated()
-                                                .requestMatchers("/api/upload").authenticated()
-                                                .requestMatchers("/admin/**").authenticated()
-                                                .requestMatchers("/api/**").authenticated()
-
-                                                // -------- Everything else --------
-                                                .anyRequest().permitAll())
-
-                                // ----------------------------
-                                // HEADERS (H2 / iframe support)
-                                // ----------------------------
-                                .headers(headers -> headers
-                                                .frameOptions(frame -> frame.disable()))
-
-                                // ----------------------------
-                                // FORM LOGIN
-                                // ----------------------------
-                                .formLogin(form -> form
-                                                .loginPage("/admin/login")
-                                                .loginProcessingUrl("/admin/login")
-                                                .successHandler(authenticationSuccessHandler())
-                                                .failureUrl("/admin/login?error"))
-
-                                // ----------------------------
-                                // LOGOUT (AUTH REQUIRED)
-                                // ----------------------------
-                                .logout(logout -> logout
-                                                .logoutUrl("/logout")
-                                                .logoutSuccessUrl("/admin/login?logout")
-                                                .invalidateHttpSession(true)
-                                                .deleteCookies("JSESSIONID", "SESSION"))
-
-                                // ----------------------------
-                                // EXCEPTION HANDLING
-                                // ----------------------------
-                                .exceptionHandling(ex -> ex
-                                                // API → 401 JSON
-                                                .defaultAuthenticationEntryPointFor(
-                                                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                                                                request -> request.getRequestURI().startsWith("/api/"))
-                                                // Browser → redirect to login
-                                                .authenticationEntryPoint(
-                                                                new LoginUrlAuthenticationEntryPoint("/admin/login")))
-
-                                // ----------------------------
-                                // USER DETAILS
-                                // ----------------------------
-                                .userDetailsService(userDetailsService)
-
-                                // ----------------------------
-                                // SESSION MANAGEMENT
-                                // ----------------------------
-                                .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                                                .maximumSessions(1));
-
-                return http.build();
+        // Local-dev only: if DevAuthFilter bean is present, run it before everything else
+        // so requests arrive pre-authenticated. Bean is conditional on dev.auto-auth.enabled=true.
+        DevAuthFilter dev = devAuthFilter.getIfAvailable();
+        if (dev != null) {
+            http.addFilterBefore(dev, CloudflareAccessFilter.class);
         }
 
-        // ----------------------------
-        // PASSWORD ENCODER
-        // ----------------------------
-        @Bean
-        public PasswordEncoder passwordEncoder() {
-                return new BCryptPasswordEncoder();
-        }
+        return http.build();
+    }
 
-        // ----------------------------
-        // AUTH MANAGER
-        // ----------------------------
-        @Bean
-        public AuthenticationManager authenticationManager(
-                        AuthenticationConfiguration authConfig) throws Exception {
-                return authConfig.getAuthenticationManager();
-        }
-
-        @Bean
-        public AuthenticationSuccessHandler authenticationSuccessHandler() {
-                return (request, response, authentication) -> {
-                        response.sendRedirect("/admin");
-                };
-        }
-
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }

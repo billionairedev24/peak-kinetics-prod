@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { MapPin, Phone, Mail, Clock, MessageSquare, AlertCircle, Map } from "lucide-react"
 import { SuccessToast } from "@/components/ui/success-toast"
 import { API_ENDPOINTS } from "@/lib/api-config"
+import { Turnstile } from "@/components/turnstile"
 
 interface FormData {
   firstName: string
@@ -42,6 +43,8 @@ export function ContactSection() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [showError, setShowError] = useState(false)
   const [toastMessage, setToastMessage] = useState("")
+  const [turnstileToken, setTurnstileToken] = useState("")
+  const handleTurnstile = useCallback((token: string) => setTurnstileToken(token), [])
 
   const handleGetDirections = () => {
     const address = "1 Chisholm Trail, Suite 450, Round Rock, TX 78681"
@@ -106,6 +109,7 @@ export function ContactSection() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(turnstileToken ? { "Cf-Turnstile-Response": turnstileToken } : {}),
         },
         body: JSON.stringify(requestData),
       })
@@ -308,6 +312,8 @@ export function ContactSection() {
                           </div>
                       )}
                     </div>
+
+                    <Turnstile onToken={handleTurnstile} />
 
                     <Button
                         size="lg"

@@ -177,12 +177,16 @@ $RECYCLE.BIN/
 # ===================================
 # Environment & Secrets
 # ===================================
+# Ignore all .env files anywhere in the tree (root, frontend/, backend/, etc.)
+# but keep templates (*.example) so contributors know what vars are needed.
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env*.local
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!.env*.example
+!**/.env.example
+!**/.env*.example
 *.env
 secrets/
 *.key
@@ -190,6 +194,12 @@ secrets/
 *.p12
 *.jks
 *.keystore
+# Cloud provider credentials
+gcp-key*.json
+service-account*.json
+.aws/
+# Claude Code local state
+.claude/
 
 # ===================================
 # Logs

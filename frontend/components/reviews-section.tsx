@@ -4,8 +4,8 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ReviewDetailModal } from "./review-detail-modal"
+import { ReviewModal } from "./review-modal"
 import { API_ENDPOINTS } from "@/lib/api-config"
-import Link from "next/link"
 
 export interface Review {
   id: string
@@ -28,6 +28,18 @@ export function ReviewsSection() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [isPaused, setIsPaused] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [reviewModalOpen, setReviewModalOpen] = useState(false)
+
+  const handleNewReview = (r: Omit<Review, "id" | "date">) => {
+    setReviews((prev) => [
+      {
+        ...r,
+        id: `pending-${Date.now()}`,
+        date: "Just now",
+      } as Review,
+      ...prev,
+    ])
+  }
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -113,14 +125,17 @@ export function ReviewsSection() {
           <div className="text-center py-20 max-w-md mx-auto">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Patient Reviews</h2>
             <p className="text-lg text-muted-foreground mb-8">Be the first to share your experience!</p>
-            <Link href="/review">
-              <Button className="gap-2 h-12 px-6">
-                <span>+</span>
-                Leave a Review
-              </Button>
-            </Link>
+            <Button onClick={() => setReviewModalOpen(true)} className="gap-2 h-12 px-6">
+              <span>+</span>
+              Leave a Review
+            </Button>
           </div>
         </div>
+        <ReviewModal
+          isOpen={reviewModalOpen}
+          onClose={() => setReviewModalOpen(false)}
+          onSubmit={handleNewReview}
+        />
       </section>
     )
   }
@@ -137,12 +152,13 @@ export function ReviewsSection() {
               Real stories from patients who've transformed their lives with PeakKinetics.
             </p>
           </div>
-          <Link href="/review">
-            <Button className="flex-shrink-0 gap-2 h-12 px-6">
-              <span>+</span>
-              Leave a Review
-            </Button>
-          </Link>
+          <Button
+            onClick={() => setReviewModalOpen(true)}
+            className="flex-shrink-0 gap-2 h-12 px-6"
+          >
+            <span>+</span>
+            Leave a Review
+          </Button>
         </div>
 
         <div className="relative group">
@@ -253,6 +269,11 @@ export function ReviewsSection() {
 
       {/* Modals */}
       {selectedReview && <ReviewDetailModal review={selectedReview} onClose={() => setSelectedReview(null)} />}
+      <ReviewModal
+        isOpen={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        onSubmit={handleNewReview}
+      />
     </section>
   )
 }

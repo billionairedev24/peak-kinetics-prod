@@ -1,30 +1,28 @@
-# PEAK-KINETICS-12-12-25
+# Peak Kinetics — Frontend
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+Next.js 16 app running on Cloudflare Pages. Talks to a Spring Boot backend on Fly.io.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/soluwafemi-nerdlogiclabs-projects/v0-peak-kinetics-12-12-25)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/CM2eH4t6llx)
+## Quick start
 
-## Overview
+```bash
+cp .env.local.example .env.local   # set NEXT_PUBLIC_API_URL etc.
+pnpm install
+pnpm dev                             # http://localhost:3000
+```
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+See **[../docs/local-testing.md](../docs/local-testing.md)** for the full local stack (Postgres + backend + frontend) setup.
 
-## Deployment
+## Scripts
 
-Your project is live at:
+| Command | What it does |
+|---|---|
+| `pnpm dev` | Next dev server |
+| `pnpm build` | Production build |
+| `pnpm typecheck` | `tsc --noEmit` |
+| `pnpm pages:build` | Cloudflare Pages build via `@cloudflare/next-on-pages` |
+| `pnpm e2e` | Playwright smoke tests |
+| `pnpm e2e:install` | One-time Playwright browser install |
 
-**[https://vercel.com/soluwafemi-nerdlogiclabs-projects/v0-peak-kinetics-12-12-25](https://vercel.com/soluwafemi-nerdlogiclabs-projects/v0-peak-kinetics-12-12-25)**
+## Docs
 
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.app/chat/CM2eH4t6llx](https://v0.app/chat/CM2eH4t6llx)**
-
-## How It Works
-
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+All deployment and ops docs live in **[../docs/](../docs/)**.

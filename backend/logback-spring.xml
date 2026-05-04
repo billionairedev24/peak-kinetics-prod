@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [rid=%X{requestId:-none}] %-5level %logger{36} - %msg%n"/>
 
-    <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
+    <appender name="SAFE_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="com.peakkineticspt.logging.PiiMaskingLayout">
+            <pattern>${LOG_PATTERN}</pattern>
+        </layout>
     </appender>
 
+    <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
+        <captureMdcAttributes>requestId</captureMdcAttributes>
+    </appender>
+
+    <logger name="org.springframework.web.servlet.DispatcherServlet" level="INFO"/>
+    <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="WARN"/>
+    <logger name="org.hibernate.SQL" level="WARN"/>
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="WARN"/>
+
     <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="SAFE_CONSOLE"/>
         <appender-ref ref="OTEL"/>
     </root>
 </configuration>

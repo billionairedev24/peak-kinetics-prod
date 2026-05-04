@@ -9,6 +9,7 @@ import { Plus, Edit2, Trash2, Eye, Calendar, Search, FileText } from "lucide-rea
 import Link from "next/link"
 import Image from "next/image"
 import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
   DialogContent,
@@ -162,9 +163,20 @@ export default function AdminBlogPage() {
         </Card>
 
         {loading ? (
-            <Card className="p-12 text-center text-gray-500">
-              <div className="animate-pulse">Loading posts...</div>
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                  <Card key={i} className="p-5 space-y-4">
+                    <Skeleton className="h-40 w-full rounded-md" />
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                    <div className="flex gap-2 pt-2">
+                      <Skeleton className="h-8 w-20" />
+                      <Skeleton className="h-8 w-20" />
+                    </div>
+                  </Card>
+              ))}
+            </div>
         ) : filteredPosts.length === 0 ? (
             <Card className="p-16 text-center">
               <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />

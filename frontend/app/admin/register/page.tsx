@@ -152,7 +152,7 @@ export default function AdminRegisterPage() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="john@peakkinetics.com"
+                  placeholder="john@peakkineticspt.com"
                   required
                   className="h-11"
                 />

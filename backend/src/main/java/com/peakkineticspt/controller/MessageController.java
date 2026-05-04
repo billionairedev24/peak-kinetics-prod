@@ -1,7 +1,9 @@
 package com.peakkineticspt.controller;
 
 import com.peakkineticspt.dto.MessageDTOs;
+import com.peakkineticspt.security.TurnstileService;
 import com.peakkineticspt.service.IMessageService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,14 +22,21 @@ public class MessageController {
 
 
     private final IMessageService messageService;
+    private final TurnstileService turnstile;
 
     /**
      * Create a new message (original message, starts a new thread)
      */
     @PostMapping
     public ResponseEntity<Map<String, Object>> createMessage(
-            @Valid @RequestBody MessageDTOs.CreateMessageRequest request) {
-        log.info("Creating new message from email: {}", request.getEmail());
+            @Valid @RequestBody MessageDTOs.CreateMessageRequest request,
+            @RequestHeader(value = "Cf-Turnstile-Response", required = false) String turnstileToken,
+            HttpServletRequest httpRequest) {
+        if (!turnstile.verify(turnstileToken, httpRequest.getRemoteAddr())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "success", false,
+                    "message", "Bot verification failed. Please refresh and try again."));
+        }
         MessageDTOs.MessageResponse response = messageService.createMessage(request);
         return ResponseEntity.ok(Map.of(
                 "success", true,

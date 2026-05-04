@@ -8,10 +8,14 @@ export default function AdminRootPage() {
   const router = useRouter()
 
   useEffect(() => {
-    if (adminAuth.isAuthenticated()) {
-      router.replace("/admin/dashboard")
-    } else {
-      router.replace("/admin/login")
+    let cancelled = false
+    ;(async () => {
+      const user = await adminAuth.getUser()
+      if (cancelled) return
+      router.replace(user ? "/admin/dashboard" : "/admin/login")
+    })()
+    return () => {
+      cancelled = true
     }
   }, [router])
 
