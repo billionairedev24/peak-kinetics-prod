@@ -65,6 +65,13 @@ google:
 jwt:
   secret: ${JWT_SECRET:local-dev-secret-not-for-production-use-only-32chars-min-required-here}
 
+# Local auth cookie — Secure off because dev runs on plain HTTP, Lax so the
+# cookie still flows when running frontend on a different localhost port.
+auth:
+  cookie:
+    secure: false
+    same-site: Lax
+
 management:
   tracing:
     sampling:

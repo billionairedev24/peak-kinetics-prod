@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -60,6 +61,35 @@ public class AuthServiceImpl implements IAuthService {
                     "Account created successfully"
             // new RegisterData(admin.getId(), admin.getEmail(), admin.getFullName())
             );
+        } finally {
+            span.end();
+        }
+    }
+
+    @Override
+    @Transactional
+    public Optional<User> login(AuthDTOs.LoginRequest request) {
+        Span span = tracer.spanBuilder("auth.login").startSpan();
+        try {
+            Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
+            if (userOpt.isEmpty()) {
+                // Burn cycles on a dummy hash to keep timing comparable to
+                // the real verify path — slows email-enumeration attacks.
+                passwordEncoder.matches(request.getPassword(),
+                        "$2a$10$7EqJtq98hPqEX7fNZaFWoOhi5z3HxaT5w5eF.x3Xz0aB4Ck5xQ7iC");
+                span.setAttribute("login.outcome", "unknown_email");
+                return Optional.empty();
+            }
+            User user = userOpt.get();
+            if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+                span.setAttribute("login.outcome", "bad_password");
+                return Optional.empty();
+            }
+            user.setLastLogin(LocalDateTime.now());
+            userRepository.save(user);
+            span.setAttribute("login.outcome", "success");
+            span.setAttribute("user.id", user.getId());
+            return Optional.of(user);
         } finally {
             span.end();
         }

@@ -2,6 +2,7 @@ package com.peakkineticspt.config;
 
 import com.peakkineticspt.security.CloudflareAccessFilter;
 import com.peakkineticspt.security.DevAuthFilter;
+import com.peakkineticspt.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final CloudflareAccessFilter cloudflareAccessFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final ObjectProvider<DevAuthFilter> devAuthFilter;
 
     @Bean
@@ -58,7 +60,16 @@ public class SecurityConfig {
                         // Actuator (health check)
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
 
-                        // Admin and admin APIs require Cloudflare Access JWT (filter handles 401)
+                        // Auth bootstrap — public so users can establish a session
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/admin/auth/login",
+                                "/api/admin/auth/logout",
+                                "/api/admin/auth/register",
+                                "/api/admin/auth/forgot-password",
+                                "/api/admin/auth/reset-password").permitAll()
+
+                        // Admin and admin APIs require either CF Access JWT or
+                        // app-issued JWT cookie (defense in depth)
                         .requestMatchers("/admin/**", "/api/admin/**", "/api/upload/**").authenticated()
                         .requestMatchers("/api/reviews/admin/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/reviews/**").authenticated()
@@ -69,6 +80,7 @@ public class SecurityConfig {
                         .anyRequest().permitAll())
 
                 .addFilterBefore(cloudflareAccessFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(jwtAuthenticationFilter, CloudflareAccessFilter.class)
 
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));

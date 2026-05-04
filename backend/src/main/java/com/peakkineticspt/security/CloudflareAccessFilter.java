@@ -51,6 +51,10 @@ public class CloudflareAccessFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         if (teamDomain == null || teamDomain.isBlank()) return true;
         String path = request.getRequestURI();
+        // App-level auth bootstrap (login, register, password reset, /me)
+        // is reachable without CF Access so the JWT flow can establish a
+        // session. Other /api/admin/** endpoints still require CF Access.
+        if (path.startsWith("/api/admin/auth/")) return true;
         return !(path.startsWith("/admin") || path.startsWith("/api/admin"));
     }
 

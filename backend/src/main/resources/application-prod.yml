@@ -66,6 +66,14 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: 86400000
 
+# auth_token cookie. Domain set so a cookie issued by api.peakkineticspt.com
+# is sent on fetches from peakkineticspt.com (same registrable domain).
+auth:
+  cookie:
+    domain: ${AUTH_COOKIE_DOMAIN:.peakkineticspt.com}
+    secure: ${AUTH_COOKIE_SECURE:true}
+    same-site: ${AUTH_COOKIE_SAME_SITE:Strict}
+
 management:
   tracing:
     sampling:

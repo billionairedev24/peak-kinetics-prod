@@ -65,6 +65,15 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: 86400000
 
+# auth_token cookie issued by /api/admin/auth/login.
+# Defaults are safe for prod (HTTPS, cross-subdomain); local overrides
+# below in application-local.yml relax Secure for HTTP dev.
+auth:
+  cookie:
+    domain: ${AUTH_COOKIE_DOMAIN:}
+    secure: ${AUTH_COOKIE_SECURE:true}
+    same-site: ${AUTH_COOKIE_SAME_SITE:Strict}
+
 management:
   tracing:
     sampling:
