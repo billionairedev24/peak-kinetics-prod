@@ -1,7 +1,7 @@
 # Cloudflare Pages config for the Next.js frontend.
 # This file is read by `wrangler pages deploy` and by next-on-pages.
 # Project name shown in the Cloudflare dashboard.
-name = "peak-kinetics-frontend"
+name = "peak-kinetics-prod"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
