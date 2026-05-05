@@ -87,6 +87,38 @@ export const adminAuth = {
   },
 
   /**
+   * Clears both the app's JWT cookie (POST /logout on the API) and the
+   * Cloudflare Access session cookie, then sends the browser to /admin/login.
+   *
+   * The CF Access logout URL must be hit on the API hostname
+   * (api.peakkineticspt.com) — that's where the CF Access cookie was set.
+   * Hitting it on the frontend domain produces "No Access cookie found".
+   */
+  logout: async (): Promise<void> => {
+    try {
+      await fetch(API_ENDPOINTS.auth.logout, {
+        method: "POST",
+        credentials: "include",
+      })
+    } catch (error) {
+      console.error("API logout failed (continuing to CF Access logout):", error)
+    }
+
+    // Build the CF Access logout URL on the API origin. Falls back to the
+    // current origin in dev where API_BASE_URL is relative.
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? ""
+    const cfLogoutUrl = apiUrl
+      ? `${apiUrl}/cdn-cgi/access/logout`
+      : "/cdn-cgi/access/logout"
+
+    // Top-level navigation so CF Access can clear its cookie and run its
+    // standard post-logout redirect (configured in Zero Trust).
+    if (typeof window !== "undefined") {
+      window.location.href = cfLogoutUrl
+    }
+  },
+
+  /**
    * Returns the signed-in user, or null if:
    *  - no session / JWT present (backend returns 401)
    *  - backend is unreachable (network error)

@@ -196,17 +196,19 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               </p>
             )}
 
-            {/* Cloudflare Access logout — clears the CF session cookie */}
-            <a href="/cdn-cgi/access/logout" className="block">
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </a>
+            {/* Clears the app JWT cookie via API, then sends the browser to
+                api.peakkineticspt.com/cdn-cgi/access/logout to clear the
+                Cloudflare Access cookie (it lives on the API hostname, not
+                the frontend domain). */}
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => adminAuth.logout()}
+              className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
           </div>
         </div>
       </aside>
