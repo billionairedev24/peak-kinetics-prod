@@ -16,7 +16,9 @@
   --secondary: #475569;
   --secondary-foreground: #ffffff;
   --muted: #f1f5f9;
-  --muted-foreground: #64748b;
+  /* slate-600 — passes WCAG AA on white (~6.97:1) and on bg-muted (~6.4:1).
+     Was slate-500 (#64748b ~4.4:1), which Lighthouse flagged on bg-muted. */
+  --muted-foreground: #475569;
   --accent: #1d4ed8;
   --accent-foreground: #ffffff;
   --destructive: #dc2626;

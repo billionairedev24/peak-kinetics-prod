@@ -344,6 +344,7 @@ export function ContactSection() {
                     <CardContent className="p-0">
                       <div className="w-full h-80 rounded-b-lg overflow-hidden">
                         <iframe
+                            title="Peak Kinetics location on Google Maps"
                             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3429.7891234567!2d-97.7299!3d30.4969!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8644b3b3b3b3b3b3%3A0x1234567890abcdef!2s1%20Chisholm%20Trail%2C%20Suite%20450%2C%20Round%20Rock%2C%20TX%2078681!5e0!3m2!1sen!2sus!4v1234567890"
                             width="100%"
                             height="100%"

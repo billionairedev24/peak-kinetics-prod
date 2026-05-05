@@ -105,7 +105,7 @@ export function ServicesSection() {
               </CardHeader>
 
               <CardContent className="pt-0">
-                <Link href={service.href}>
+                <Link href={service.href} aria-label={`Learn more about ${service.title}`}>
                   <Button className="w-full group/btn bg-primary hover:bg-primary/90 text-white">
                     Learn More
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
